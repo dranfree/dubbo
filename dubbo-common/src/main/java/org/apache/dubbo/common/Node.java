@@ -23,6 +23,7 @@ public interface Node {
 
     /**
      * get url.
+     * 获取节点地址
      *
      * @return url.
      */
@@ -30,6 +31,7 @@ public interface Node {
 
     /**
      * is available.
+     * 判断节点是否可用
      *
      * @return available.
      */
@@ -37,6 +39,7 @@ public interface Node {
 
     /**
      * destroy.
+     * 销毁节点
      */
     void destroy();
 

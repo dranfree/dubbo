@@ -26,7 +26,8 @@ import java.util.Collection;
 
 /**
  * RegistryStatusChecker
- *
+ * <p>
+ * 对注册中心进行状态检查
  */
 @Activate
 public class RegistryStatusChecker implements StatusChecker {

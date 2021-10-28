@@ -21,42 +21,35 @@ import org.apache.dubbo.common.timer.HashedWheelTimer;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.registry.NotifyListener;
-import org.apache.dubbo.registry.retry.FailedNotifiedTask;
-import org.apache.dubbo.registry.retry.FailedRegisteredTask;
-import org.apache.dubbo.registry.retry.FailedSubscribedTask;
-import org.apache.dubbo.registry.retry.FailedUnregisteredTask;
-import org.apache.dubbo.registry.retry.FailedUnsubscribedTask;
+import org.apache.dubbo.registry.retry.*;
 import org.apache.dubbo.remoting.Constants;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 
 import static org.apache.dubbo.common.constants.CommonConstants.FILE_KEY;
-import static org.apache.dubbo.registry.Constants.CONSUMER_PROTOCOL;
-import static org.apache.dubbo.registry.Constants.DEFAULT_REGISTRY_RETRY_PERIOD;
-import static org.apache.dubbo.registry.Constants.REGISTRY_RETRY_PERIOD_KEY;
+import static org.apache.dubbo.registry.Constants.*;
 
 /**
  * FailbackRegistry. (SPI, Prototype, ThreadSafe)
+ * <p>
+ * 实现真正的注册订阅逻辑，提供模板方法，远程调用部分在具体子类中实现，主要负责失败重试逻辑。
  */
 public abstract class FailbackRegistry extends AbstractRegistry {
 
     /*  retry task map */
 
+    // 注册失败的URL集合
     private final ConcurrentMap<URL, FailedRegisteredTask> failedRegistered = new ConcurrentHashMap<URL, FailedRegisteredTask>();
-
+    // 取消注册失败的URL集合
     private final ConcurrentMap<URL, FailedUnregisteredTask> failedUnregistered = new ConcurrentHashMap<URL, FailedUnregisteredTask>();
-
+    // 订阅失败的监听器集合
     private final ConcurrentMap<Holder, FailedSubscribedTask> failedSubscribed = new ConcurrentHashMap<Holder, FailedSubscribedTask>();
-
+    // 取消订阅失败的监听器集合
     private final ConcurrentMap<Holder, FailedUnsubscribedTask> failedUnsubscribed = new ConcurrentHashMap<Holder, FailedUnsubscribedTask>();
-
+    // 通知失败的URL集合
     private final ConcurrentMap<Holder, FailedNotifiedTask> failedNotified = new ConcurrentHashMap<Holder, FailedNotifiedTask>();
 
     /**
@@ -64,13 +57,15 @@ public abstract class FailbackRegistry extends AbstractRegistry {
      */
     private final int retryPeriod;
 
+    // 失败重试定时器
     // Timer for failure retry, regular check if there is a request for failure, and if there is, an unlimited retry
     private final HashedWheelTimer retryTimer;
 
     public FailbackRegistry(URL url) {
         super(url);
+        // 优先从url中读取重试频率，默认5秒
         this.retryPeriod = url.getParameter(REGISTRY_RETRY_PERIOD_KEY, DEFAULT_REGISTRY_RETRY_PERIOD);
-
+        // 这里假定重试任务不会太多
         // since the retry task will not be very much. 128 ticks is enough.
         retryTimer = new HashedWheelTimer(new NamedThreadFactory("DubboRegistryRetryTimer", true), retryPeriod, TimeUnit.MILLISECONDS, 128);
     }
@@ -233,14 +228,16 @@ public abstract class FailbackRegistry extends AbstractRegistry {
             return;
         }
         super.register(url);
+        // 从失败注册/取消注册的缓存中移除
         removeFailedRegistered(url);
         removeFailedUnregistered(url);
         try {
+            // 向注册中心发送一个注册请求
             // Sending a registration request to the server side
             doRegister(url);
         } catch (Exception e) {
             Throwable t = e;
-
+            // 如果开启了启动检测，这里是要直接抛出异常的。
             // If the startup detection is opened, the Exception is thrown directly.
             boolean check = getUrl().getParameter(Constants.CHECK_KEY, true)
                     && url.getParameter(Constants.CHECK_KEY, true)
@@ -254,7 +251,7 @@ public abstract class FailbackRegistry extends AbstractRegistry {
             } else {
                 logger.error("Failed to register " + url + ", waiting for retry, cause: " + t.getMessage(), t);
             }
-
+            // 把这个注册失败的url放到失败缓存中，后台重试。
             // Record a failed registration request to a failed list, retry regularly
             addFailedRegistered(url);
         }

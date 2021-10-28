@@ -19,32 +19,14 @@ package org.apache.dubbo.registry.support;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.utils.CollectionUtils;
-import org.apache.dubbo.common.utils.ConcurrentHashSet;
-import org.apache.dubbo.common.utils.ConfigUtils;
-import org.apache.dubbo.common.utils.NamedThreadFactory;
-import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.common.utils.UrlUtils;
+import org.apache.dubbo.common.utils.*;
 import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.Registry;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.RandomAccessFile;
+import java.io.*;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
@@ -53,43 +35,53 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
-import static org.apache.dubbo.common.constants.CommonConstants.ANY_VALUE;
-import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SPLIT_PATTERN;
-import static org.apache.dubbo.common.constants.CommonConstants.FILE_KEY;
-import static org.apache.dubbo.common.constants.RegistryConstants.ACCEPTS_KEY;
-import static org.apache.dubbo.common.constants.RegistryConstants.CATEGORY_KEY;
-import static org.apache.dubbo.common.constants.RegistryConstants.DEFAULT_CATEGORY;
-import static org.apache.dubbo.common.constants.RegistryConstants.DYNAMIC_KEY;
-import static org.apache.dubbo.common.constants.RegistryConstants.EMPTY_PROTOCOL;
+import static org.apache.dubbo.common.constants.CommonConstants.*;
+import static org.apache.dubbo.common.constants.RegistryConstants.*;
 import static org.apache.dubbo.registry.Constants.REGISTRY_FILESAVE_SYNC_KEY;
 import static org.apache.dubbo.registry.Constants.REGISTRY__LOCAL_FILE_CACHE_ENABLED;
 
 /**
  * AbstractRegistry. (SPI, Prototype, ThreadSafe)
+ * <p>
+ * 内存缓存逻辑
+ * <p>
+ * 为了减轻注册中心的压力，在此类中实现了把URL缓存到本地property文件中的机制，
+ * 并且实现了注册中心的注册、订阅等方法。
  */
 public abstract class AbstractRegistry implements Registry {
 
+    // 缓存文件中服务提供方地址分隔符
     // URL address separator, used in file cache, service provider URL separation
     private static final char URL_SEPARATOR = ' ';
+    // URL地址分隔正则表达式，用于解析文件缓存中服务提供者URL列表
     // URL address separated regular expression for parsing the service provider URL list in the file cache
     private static final String URL_SPLIT = "\\s+";
     // Max times to retry to save properties to local cache file
     private static final int MAX_RETRY_TIMES_SAVE_PROPERTIES = 3;
     // Log output
     protected final Logger logger = LoggerFactory.getLogger(getClass());
+    // 本地缓存，有一个特殊的key=registries记录的是注册中心的列表，其他的都记录的是服务提供方列表。
     // Local disk cache, where the special key value.registries records the list of registry centers, and the others are the list of notified service providers
     private final Properties properties = new Properties();
+    // 单线程异步写缓存文件
     // File cache timing writing
     private final ExecutorService registryCacheExecutor = Executors.newFixedThreadPool(1, new NamedThreadFactory("DubboSaveRegistryCache", true));
     // Is it synchronized to save the file
+    // 是否同步保存文件，为true时不使用上面的执行器，只有false的时候才使用。
     private boolean syncSaveFile;
+    // 因为每次都是全覆盖式更新，需要这个版本号来避免老版本覆盖新版本。
     private final AtomicLong lastCacheChanged = new AtomicLong();
     private final AtomicInteger savePropertiesRetryTimes = new AtomicInteger();
+    // 已注册URL集合
     private final Set<URL> registered = new ConcurrentHashSet<>();
+    // 订阅URL的监听器集合
     private final ConcurrentMap<URL, Set<NotifyListener>> subscribed = new ConcurrentHashMap<>();
+    // 某个消费者被通知的某一类型的URL集合
+    // 第一层key是消费者URL
+    // 第二层key是分类的意思，例如providers、routes，value就是被通知的URL集合。
     private final ConcurrentMap<URL, Map<String, List<URL>>> notified = new ConcurrentHashMap<>();
     private URL registryUrl;
+    // 本地磁盘缓存文件
     // Local disk cache file
     private File file;
 
@@ -102,6 +94,7 @@ public abstract class AbstractRegistry implements Registry {
             String filename = url.getParameter(FILE_KEY, defaultFilename);
             File file = null;
             if (ConfigUtils.isNotEmpty(filename)) {
+                // 创建文件
                 file = new File(filename);
                 if (!file.exists() && file.getParentFile() != null && !file.getParentFile().exists()) {
                     if (!file.getParentFile().mkdirs()) {
@@ -113,6 +106,7 @@ public abstract class AbstractRegistry implements Registry {
             // When starting the subscription center,
             // we need to read the local cache file for future Registry fault tolerance processing.
             loadProperties();
+            // 通知监听器，URL变化结果。
             notify(url.getBackupUrls());
         }
     }
@@ -254,6 +248,7 @@ public abstract class AbstractRegistry implements Registry {
     @Override
     public List<URL> lookup(URL url) {
         List<URL> result = new ArrayList<>();
+        // 获得该消费者url订阅的所有被通知的服务url集合
         Map<String, List<URL>> notifiedUrls = getNotified().get(url);
         if (CollectionUtils.isNotEmptyMap(notifiedUrls)) {
             for (List<URL> urls : notifiedUrls.values()) {
@@ -266,6 +261,7 @@ public abstract class AbstractRegistry implements Registry {
         } else {
             final AtomicReference<List<URL>> reference = new AtomicReference<>();
             NotifyListener listener = reference::set;
+            // 订阅服务，就是消费者url订阅已经注册在注册中心的服务（即添加该服务的监听器）
             subscribe(url, listener); // Subscribe logic guarantees the first notify to return
             List<URL> urls = reference.get();
             if (CollectionUtils.isNotEmpty(urls)) {
@@ -333,6 +329,7 @@ public abstract class AbstractRegistry implements Registry {
         }
     }
 
+    // 在注册中心断开，重连成功的时候，会恢复注册和订阅。
     protected void recover() throws Exception {
         // register
         Set<URL> recoverRegistered = new HashSet<>(getRegistered());
@@ -345,6 +342,7 @@ public abstract class AbstractRegistry implements Registry {
             }
         }
         // subscribe
+        // 把内存缓存中的subscribed取出来遍历进行订阅
         Map<URL, Set<NotifyListener>> recoverSubscribed = new HashMap<>(getSubscribed());
         if (!recoverSubscribed.isEmpty()) {
             if (logger.isInfoEnabled()) {

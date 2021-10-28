@@ -25,11 +25,7 @@ import org.apache.dubbo.registry.Registry;
 import org.apache.dubbo.registry.RegistryFactory;
 import org.apache.dubbo.registry.RegistryService;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -39,6 +35,8 @@ import static org.apache.dubbo.rpc.cluster.Constants.REFER_KEY;
 
 /**
  * AbstractRegistryFactory. (SPI, Singleton, ThreadSafe)
+ * <p>
+ * 实现了Registry的容器管理
  *
  * @see org.apache.dubbo.registry.RegistryFactory
  */
@@ -47,6 +45,7 @@ public abstract class AbstractRegistryFactory implements RegistryFactory {
     // Log output
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractRegistryFactory.class);
 
+    // 对REGISTRIES的访问做竞争控制
     // The lock for the acquisition process of the registry
     protected static final ReentrantLock LOCK = new ReentrantLock();
 
@@ -56,7 +55,7 @@ public abstract class AbstractRegistryFactory implements RegistryFactory {
     private static final AtomicBoolean destroyed = new AtomicBoolean(false);
 
     /**
-     * Get all registries
+     * Get all registries 多注册中心支持
      *
      * @return all registries
      */
