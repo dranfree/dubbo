@@ -25,6 +25,8 @@ import java.io.OutputStream;
 
 /**
  * Codec. (SPI, Singleton, ThreadSafe)
+ *
+ * @see org.apache.dubbo.remoting.transport.codec.CodecAdapter 将Codec适配为Codec2
  */
 @Deprecated
 @SPI

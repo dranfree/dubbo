@@ -22,18 +22,27 @@ import org.apache.dubbo.remoting.buffer.ChannelBuffer;
 
 import java.io.IOException;
 
+/**
+ * 编解码，决定传输的数据格式
+ */
 @SPI
 public interface Codec2 {
 
+    // 去URL中查找key=codec的值，来加载url指定的编解码实现。
     @Adaptive({Constants.CODEC_KEY})
     void encode(Channel channel, ChannelBuffer buffer, Object message) throws IOException;
 
     @Adaptive({Constants.CODEC_KEY})
     Object decode(Channel channel, ChannelBuffer buffer) throws IOException;
 
-
+    // 拆包、粘包相关
     enum DecodeResult {
-        NEED_MORE_INPUT, SKIP_SOME_INPUT
+
+        // 需要更多输入，粘包
+        NEED_MORE_INPUT,
+
+        // 舍弃一些输入，拆包
+        SKIP_SOME_INPUT
     }
 
 }
