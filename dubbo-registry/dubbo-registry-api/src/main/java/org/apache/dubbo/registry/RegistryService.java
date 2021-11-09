@@ -29,6 +29,10 @@ import java.util.List;
 public interface RegistryService {
 
     /**
+     * 注册：
+     * 1.生产者服务
+     * TODO 2.消费者地址，作用应该是当生产者地址发生变化时消费者能够及时得到通知？
+     *<p>
      * Register data, such as : provider service, consumer address, route rule, override rule and other data.
      * <p>
      * Registering is required to support the contract:<br>

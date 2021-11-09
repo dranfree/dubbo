@@ -85,6 +85,7 @@ public class ZookeeperRegistry extends FailbackRegistry {
         zkClient = zookeeperTransporter.connect(url);
         zkClient.addStateListener((state) -> {
             if (state == StateListener.RECONNECTED) {
+                // 重连Zookeeper的时候重新拉取订阅的提供方地址列表
                 logger.warn("Trying to fetch the latest urls, in case there're provider changes during connection loss.\n" +
                         " Since ephemeral ZNode will not get deleted for a connection lose, " +
                         "there's no need to re-register url of this instance.");
@@ -125,6 +126,7 @@ public class ZookeeperRegistry extends FailbackRegistry {
     @Override
     public void doRegister(URL url) {
         try {
+            // 在注册的时候默认创建的是临时节点，可以随着会话结束而自动移除。
             zkClient.create(toUrlPath(url), url.getParameter(DYNAMIC_KEY, true));
         } catch (Throwable e) {
             throw new RpcException("Failed to register " + url + " to zookeeper " + getUrl() + ", cause: " + e.getMessage(), e);
