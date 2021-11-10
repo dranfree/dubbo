@@ -34,14 +34,12 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 
-import static org.apache.dubbo.remoting.Constants.HEARTBEAT_CHECK_TICK;
-import static org.apache.dubbo.remoting.Constants.LEAST_HEARTBEAT_DURATION;
-import static org.apache.dubbo.remoting.Constants.TICKS_PER_WHEEL;
+import static org.apache.dubbo.remoting.Constants.*;
 import static org.apache.dubbo.remoting.utils.UrlUtils.getHeartbeat;
 import static org.apache.dubbo.remoting.utils.UrlUtils.getIdleTimeout;
 
 /**
- * DefaultMessageClient
+ * DefaultMessageClient，基于协议头的信息交互客户端类，增加了心跳机制。
  */
 public class HeaderExchangeClient implements ExchangeClient {
 
@@ -60,7 +58,9 @@ public class HeaderExchangeClient implements ExchangeClient {
 
         if (startTimer) {
             URL url = client.getUrl();
+            // 定时检测重连
             startReconnectTask(url);
+            // 定时发送心跳
             startHeartBeatTask(url);
         }
     }

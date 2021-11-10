@@ -23,6 +23,9 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 
 /**
+ * 在Exchange层，将message划分为Request和Response两种类型，并且在这 两个模型上增加一些系统字段来处理问题。
+ * Dubbo将一条消息分为了协议头和内容两个部分：协议头包括系统字段，例如编号等，内容包括具体请求的参数和响应的结果等。
+ * 在Exchange层，大量逻辑是基于协议头的。
  * ExchangeChannel. (API/SPI, Prototype, ThreadSafe)
  */
 public interface ExchangeChannel extends Channel {

@@ -21,7 +21,7 @@ import org.apache.dubbo.common.extension.Adaptive;
 import org.apache.dubbo.common.extension.SPI;
 
 /**
- * 网络传输接口，负责数据的发送和接收。
+ * 网络传输接口，负责底层的数据发送和接收，不关心消息内容。
  * Transporter. (SPI, Singleton, ThreadSafe)
  * <p>
  * <a href="http://en.wikipedia.org/wiki/Transport_Layer">Transport Layer</a>
