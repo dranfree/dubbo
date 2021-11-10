@@ -23,11 +23,7 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
 import org.apache.dubbo.common.utils.ExecutorUtil;
 import org.apache.dubbo.common.utils.NetUtils;
-import org.apache.dubbo.remoting.Channel;
-import org.apache.dubbo.remoting.ChannelHandler;
-import org.apache.dubbo.remoting.Constants;
-import org.apache.dubbo.remoting.RemotingException;
-import org.apache.dubbo.remoting.RemotingServer;
+import org.apache.dubbo.remoting.*;
 
 import java.net.InetSocketAddress;
 import java.util.Collection;
@@ -35,13 +31,10 @@ import java.util.concurrent.ExecutorService;
 
 import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_VALUE;
-import static org.apache.dubbo.remoting.Constants.ACCEPTS_KEY;
-import static org.apache.dubbo.remoting.Constants.DEFAULT_ACCEPTS;
-import static org.apache.dubbo.remoting.Constants.DEFAULT_IDLE_TIMEOUT;
-import static org.apache.dubbo.remoting.Constants.IDLE_TIMEOUT_KEY;
+import static org.apache.dubbo.remoting.Constants.*;
 
 /**
- * AbstractServer
+ * AbstractServer，服务端抽象类
  */
 public abstract class AbstractServer extends AbstractEndpoint implements RemotingServer {
 
@@ -68,7 +61,7 @@ public abstract class AbstractServer extends AbstractEndpoint implements Remotin
         this.accepts = url.getParameter(ACCEPTS_KEY, DEFAULT_ACCEPTS);
         this.idleTimeout = url.getParameter(IDLE_TIMEOUT_KEY, DEFAULT_IDLE_TIMEOUT);
         try {
-            doOpen();
+            doOpen(); // 开启服务器
             if (logger.isInfoEnabled()) {
                 logger.info("Start " + getClass().getSimpleName() + " bind " + getBindAddress() + ", export " + getLocalAddress());
             }

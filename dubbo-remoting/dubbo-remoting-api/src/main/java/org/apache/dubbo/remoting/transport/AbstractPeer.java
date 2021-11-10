@@ -17,14 +17,15 @@
 package org.apache.dubbo.remoting.transport;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.remoting.Channel;
-import org.apache.dubbo.remoting.ChannelHandler;
-import org.apache.dubbo.remoting.Constants;
-import org.apache.dubbo.remoting.Endpoint;
-import org.apache.dubbo.remoting.RemotingException;
+import org.apache.dubbo.remoting.*;
 
 /**
- * AbstractPeer
+ * AbstractPeer，作为 {@link ChannelHandler} 的装饰器
+ *
+ * @see AbstractEndpoint
+ * @see AbstractClient
+ * @see AbstractServer
+ * @see AbstractChannel
  */
 public abstract class AbstractPeer implements Endpoint, ChannelHandler {
 

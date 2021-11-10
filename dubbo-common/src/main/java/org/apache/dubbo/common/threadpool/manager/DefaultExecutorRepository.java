@@ -119,6 +119,7 @@ public class DefaultExecutorRepository implements ExecutorRepository {
     @Override
     public void updateThreadpool(URL url, ExecutorService executor) {
         try {
+            // 重置线程池配置
             if (url.hasParameter(THREADS_KEY)
                     && executor instanceof ThreadPoolExecutor && !executor.isShutdown()) {
                 ThreadPoolExecutor threadPoolExecutor = (ThreadPoolExecutor) executor;

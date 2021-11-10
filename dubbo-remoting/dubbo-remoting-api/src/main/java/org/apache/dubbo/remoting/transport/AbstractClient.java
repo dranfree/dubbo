@@ -40,7 +40,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_CLIENT_T
 import static org.apache.dubbo.common.constants.CommonConstants.THREADPOOL_KEY;
 
 /**
- * AbstractClient
+ * AbstractClient，重点是客户端重连逻辑
  */
 public abstract class AbstractClient extends AbstractEndpoint implements Client {
 
@@ -54,11 +54,13 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
     public AbstractClient(URL url, ChannelHandler handler) throws RemotingException {
         super(url, handler);
 
+        // 从url中获取“是否重连”配置
         needReconnect = url.getParameter(Constants.SEND_RECONNECT_KEY, false);
 
         initExecutor(url);
 
         try {
+            // 打开客户端
             doOpen();
         } catch (Throwable t) {
             close();
@@ -91,6 +93,7 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
     private void initExecutor(URL url) {
         url = ExecutorUtil.setThreadName(url, CLIENT_THREAD_POOL_NAME);
         url = url.addParameterIfAbsent(THREADPOOL_KEY, DEFAULT_CLIENT_THREADPOOL);
+        // 重连执行器
         executor = executorRepository.createExecutorIfAbsent(url);
     }
 
@@ -239,6 +242,7 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
 
     @Override
     public void reconnect() throws RemotingException {
+        // 客户端重连逻辑
         if (!isConnected()) {
             connectLock.lock();
             try {

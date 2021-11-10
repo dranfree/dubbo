@@ -18,6 +18,15 @@ package org.apache.dubbo.remoting.transport;
 
 import org.apache.dubbo.remoting.ChannelHandler;
 
+/**
+ * 相当于装饰器模式中的Component角色
+ */
 public interface ChannelHandlerDelegate extends ChannelHandler {
+
+    /**
+     * this is a unwrap method
+     *
+     * @return 被装饰的原始 {@link ChannelHandler} 对象
+     */
     ChannelHandler getHandler();
 }
