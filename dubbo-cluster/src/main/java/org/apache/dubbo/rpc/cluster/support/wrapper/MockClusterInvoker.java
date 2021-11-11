@@ -21,12 +21,7 @@ import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.rpc.AsyncRpcResult;
-import org.apache.dubbo.rpc.Invocation;
-import org.apache.dubbo.rpc.Invoker;
-import org.apache.dubbo.rpc.Result;
-import org.apache.dubbo.rpc.RpcException;
-import org.apache.dubbo.rpc.RpcInvocation;
+import org.apache.dubbo.rpc.*;
 import org.apache.dubbo.rpc.cluster.Directory;
 import org.apache.dubbo.rpc.support.MockInvoker;
 
@@ -35,6 +30,11 @@ import java.util.List;
 import static org.apache.dubbo.rpc.Constants.MOCK_KEY;
 import static org.apache.dubbo.rpc.cluster.Constants.INVOCATION_NEED_MOCK;
 
+/**
+ * 作为最外层的Invoker装饰器，封装了服务降级逻辑。
+ *
+ * @param <T>
+ */
 public class MockClusterInvoker<T> implements Invoker<T> {
 
     private static final Logger logger = LoggerFactory.getLogger(MockClusterInvoker.class);
@@ -78,20 +78,22 @@ public class MockClusterInvoker<T> implements Invoker<T> {
 
         String value = getUrl().getMethodParameter(invocation.getMethodName(), MOCK_KEY, Boolean.FALSE.toString()).trim();
         if (value.length() == 0 || "false".equalsIgnoreCase(value)) {
-            //no mock
+            // 无 mock 逻辑，直接调用其他 Invoker 对象的 invoke 方法。
+            // 比如 FailoverClusterInvoker，这是默认的失败重试策略，自动重试其他服务器。
             result = this.invoker.invoke(invocation);
         } else if (value.startsWith("force")) {
             if (logger.isWarnEnabled()) {
                 logger.warn("force-mock: " + invocation.getMethodName() + " force-mock enabled , url : " + getUrl());
             }
-            //force:direct mock
+            //force:direct mock，直接执行 mock 逻辑，不调用远程服务器。
             result = doMockInvoke(invocation, null);
         } else {
-            //fail-mock
+            //fail-mock，消费方调用远程服务失败之后再去执行 mock 逻辑。
             try {
                 result = this.invoker.invoke(invocation);
 
                 //fix:#4585
+                // 如果是业务异常，那么直接抛出去即可，不走 mock 逻辑。
                 if(result.getException() != null && result.getException() instanceof RpcException){
                     RpcException rpcException= (RpcException)result.getException();
                     if(rpcException.isBiz()){

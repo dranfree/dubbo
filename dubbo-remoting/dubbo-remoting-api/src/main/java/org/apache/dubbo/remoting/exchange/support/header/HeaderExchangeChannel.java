@@ -46,6 +46,7 @@ final class HeaderExchangeChannel implements ExchangeChannel {
     private static final String CHANNEL_KEY = HeaderExchangeChannel.class.getName() + ".CHANNEL";
 
     // 作为Channel的装饰器
+    // 底层网络IO客户端：NettyClient/MinaClient/...
     private final Channel channel;
 
     private volatile boolean closed = false;
@@ -135,6 +136,7 @@ final class HeaderExchangeChannel implements ExchangeChannel {
         req.setData(request);
         DefaultFuture future = DefaultFuture.newFuture(channel, req, timeout, executor);
         try {
+            // 这里一般是 NettyClient，不过调用的是其父类 AbstractPeer 的 send 方法。
             channel.send(req);
         } catch (RemotingException e) {
             future.cancel();

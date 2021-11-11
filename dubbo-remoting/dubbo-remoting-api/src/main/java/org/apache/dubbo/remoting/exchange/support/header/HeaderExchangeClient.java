@@ -44,6 +44,9 @@ import static org.apache.dubbo.remoting.utils.UrlUtils.getIdleTimeout;
 public class HeaderExchangeClient implements ExchangeClient {
 
     private final Client client;
+    /**
+     * @see HeaderExchangeChannel
+     */
     private final ExchangeChannel channel;
 
     private static final HashedWheelTimer IDLE_CHECK_TIMER = new HashedWheelTimer(
@@ -67,6 +70,7 @@ public class HeaderExchangeClient implements ExchangeClient {
 
     @Override
     public CompletableFuture<Object> request(Object request) throws RemotingException {
+        // 直接调用 HeaderExchangeChannel 的同签名方法
         return channel.request(request);
     }
 

@@ -66,8 +66,10 @@ public class ExchangeCodec extends TelnetCodec {
     @Override
     public void encode(Channel channel, ChannelBuffer buffer, Object msg) throws IOException {
         if (msg instanceof Request) {
+            // 对 Request 对象进行编码
             encodeRequest(channel, buffer, (Request) msg);
         } else if (msg instanceof Response) {
+            // 对 Response 对象进行编码
             encodeResponse(channel, buffer, (Response) msg);
         } else {
             super.encode(channel, buffer, msg);
@@ -217,13 +219,15 @@ public class ExchangeCodec extends TelnetCodec {
         // set request and serialization flag.
         header[2] = (byte) (FLAG_REQUEST | serialization.getContentTypeId());
 
+        // 设置通信方式
         if (req.isTwoWay()) {
             header[2] |= FLAG_TWOWAY;
         }
+        // 设置时间标识
         if (req.isEvent()) {
             header[2] |= FLAG_EVENT;
         }
-
+        // 设置请求编号
         // set request id.
         Bytes.long2bytes(req.getId(), header, 4);
 
@@ -233,8 +237,11 @@ public class ExchangeCodec extends TelnetCodec {
         ChannelBufferOutputStream bos = new ChannelBufferOutputStream(buffer);
         ObjectOutput out = serialization.serialize(channel.getUrl(), bos);
         if (req.isEvent()) {
+            // 对事件数据进行序列化操作
             encodeEventData(channel, out, req.getData());
         } else {
+            // 对请求数据进行序列化操作 => DubboCodec
+            // TODO req.getData() 好像会在某一时刻变为null的，不知道为什么？
             encodeRequestData(channel, out, req.getData(), req.getVersion());
         }
         out.flushBuffer();
@@ -243,12 +250,15 @@ public class ExchangeCodec extends TelnetCodec {
         }
         bos.flush();
         bos.close();
+        // 获取消息体长度
         int len = bos.writtenBytes();
         checkPayload(channel, len);
+        // 将消息体长度写入消息头中
         Bytes.int2bytes(len, header, 12);
 
         // write
         buffer.writerIndex(savedWriteIndex);
+        // 写入消息头
         buffer.writeBytes(header); // write header.
         buffer.writerIndex(savedWriteIndex + HEADER_LENGTH + len);
     }

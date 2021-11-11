@@ -173,11 +173,14 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
         if (needReconnect && !isConnected()) {
             connect();
         }
+        // 调用抽象方法获取Channel实例
+        // 默认情况下，Dubbo使用Netty作为底层通信框架。
         Channel channel = getChannel();
         //TODO Can the value returned by getChannel() be null? need improvement.
         if (channel == null || !channel.isConnected()) {
             throw new RemotingException(this, "message can not send, because channel is closed . url:" + getUrl());
         }
+        // 继续向下调用
         channel.send(message, sent);
     }
 

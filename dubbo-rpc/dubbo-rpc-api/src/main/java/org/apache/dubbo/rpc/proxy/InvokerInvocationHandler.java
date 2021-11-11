@@ -28,10 +28,13 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 
 /**
- * InvokerHandler
+ * InvokerHandler，这就是dubbo客户端生成的代理类所使用的InvocationHandler实现
  */
 public class InvokerInvocationHandler implements InvocationHandler {
     private static final Logger logger = LoggerFactory.getLogger(InvokerInvocationHandler.class);
+    /**
+     * org.apache.dubbo.rpc.cluster.support.wrapper.MockClusterInvoker
+     */
     private final Invoker<?> invoker;
     private ConsumerModel consumerModel;
 

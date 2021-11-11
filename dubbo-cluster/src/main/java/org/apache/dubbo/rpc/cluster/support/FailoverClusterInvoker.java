@@ -20,11 +20,7 @@ import org.apache.dubbo.common.Version;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.NetUtils;
-import org.apache.dubbo.rpc.Invocation;
-import org.apache.dubbo.rpc.Invoker;
-import org.apache.dubbo.rpc.Result;
-import org.apache.dubbo.rpc.RpcContext;
-import org.apache.dubbo.rpc.RpcException;
+import org.apache.dubbo.rpc.*;
 import org.apache.dubbo.rpc.cluster.Directory;
 import org.apache.dubbo.rpc.cluster.LoadBalance;
 import org.apache.dubbo.rpc.support.RpcUtils;
@@ -43,6 +39,13 @@ import static org.apache.dubbo.common.constants.CommonConstants.RETRIES_KEY;
  * <p>
  * <a href="http://en.wikipedia.org/wiki/Failover">Failover</a>
  *
+ * @see org.apache.dubbo.rpc.cluster.support.wrapper.MockClusterInvoker
+ *
+ * @see FailfastClusterInvoker 快速失败，适用于非幂等性的操作，比如新增记录。
+ * @see FailsafeClusterInvoker 出现异常时直接忽略，适用于写入审计日志等操作。
+ * @see FailbackClusterInvoker 失败自动恢复，后台记录失败请求，定时重发。通常用于消息通知操作。
+ * @see ForkingClusterInvoker 并行调用多个服务器，只要有一个成功即返回，通常用于实时性要求比较高的读操作，但需要浪费更多的资源，可以设置最大并行数。
+ * @see BroadcastClusterInvoker 广播调用所有提供者，逐个调用，任意一台报错则报错，通常用于通知所有提供者更新等本地资源。可以配置调用失败的比例。
  */
 public class FailoverClusterInvoker<T> extends AbstractClusterInvoker<T> {
 

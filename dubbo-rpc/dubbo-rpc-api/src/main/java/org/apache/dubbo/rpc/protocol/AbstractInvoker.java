@@ -45,7 +45,10 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
- * AbstractInvoker.
+ * AbstractInvoker. 此类大部分方法是用于添加信息到 RpcInvocation#arguments 变量中去
+ *
+ * 1.DubboInvoker
+ * 2.InjvmInvoker
  */
 public abstract class AbstractInvoker<T> implements Invoker<T> {
 
@@ -139,8 +142,10 @@ public abstract class AbstractInvoker<T> implements Invoker<T> {
                     + ", dubbo version is " + Version.getVersion() + ", this invoker should not be used any longer");
         }
         RpcInvocation invocation = (RpcInvocation) inv;
+        // TODO 这个貌似是设置当前的invoker？什么作用？
         invocation.setInvoker(this);
         if (CollectionUtils.isNotEmptyMap(attachment)) {
+            // 设置 RPC 上下文参数
             invocation.addObjectAttachmentsIfAbsent(attachment);
         }
         Map<String, Object> contextAttachments = RpcContext.getContext().getObjectAttachments();
@@ -155,6 +160,7 @@ public abstract class AbstractInvoker<T> implements Invoker<T> {
         }
 
         invocation.setInvokeMode(RpcUtils.getInvokeMode(url, invocation));
+        // 设置异步信息
         RpcUtils.attachInvocationIdIfAsync(getUrl(), invocation);
 
         AsyncRpcResult asyncResult;

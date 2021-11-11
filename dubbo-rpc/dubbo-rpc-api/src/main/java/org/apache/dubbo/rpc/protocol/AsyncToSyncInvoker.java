@@ -52,9 +52,10 @@ public class AsyncToSyncInvoker<T> implements Invoker<T> {
         Result asyncResult = invoker.invoke(invocation);
 
         try {
+            // 如果是同步调用，那么这里阻塞直到收到提供方响应结果。
             if (InvokeMode.SYNC == ((RpcInvocation) invocation).getInvokeMode()) {
                 /**
-                 * NOTICE!
+                 * NOTICE! 阻塞调用有严重的新能衰减？
                  * must call {@link java.util.concurrent.CompletableFuture#get(long, TimeUnit)} because
                  * {@link java.util.concurrent.CompletableFuture#get()} was proved to have serious performance drop.
                  */

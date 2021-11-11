@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.remoting.transport.netty4;
 
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelFuture;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -23,9 +25,6 @@ import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.transport.AbstractChannel;
 import org.apache.dubbo.remoting.utils.PayloadDropper;
-
-import io.netty.channel.Channel;
-import io.netty.channel.ChannelFuture;
 
 import java.net.InetSocketAddress;
 import java.util.Map;
@@ -44,6 +43,8 @@ final class NettyChannel extends AbstractChannel {
     private static final Logger logger = LoggerFactory.getLogger(NettyChannel.class);
     /**
      * the cache for netty channel and dubbo channel
+     * <p>
+     * io.netty.channel.Channel => org.apache.dubbo.remoting.transport.netty4.NettyChannel
      */
     private static final ConcurrentMap<Channel, NettyChannel> CHANNEL_MAP = new ConcurrentHashMap<Channel, NettyChannel>();
     /**
@@ -159,7 +160,12 @@ final class NettyChannel extends AbstractChannel {
         boolean success = true;
         int timeout = 0;
         try {
+            // 发送消息（包含请求和响应消息）
             ChannelFuture future = channel.writeAndFlush(message);
+            // sent 的值源于 <dubbo:method sent="true/false" /> 中 sent 的配置值，有两种配置值：
+            //   1. true: 等待消息发出，消息发送失败将抛出异常
+            //   2. false: 不等待消息发出，将消息放入 IO 队列，即刻返回
+            // 默认情况下 sent = false；
             if (sent) {
                 // wait timeout ms
                 timeout = getUrl().getPositiveParameter(TIMEOUT_KEY, DEFAULT_TIMEOUT);

@@ -36,6 +36,12 @@ import static org.apache.dubbo.rpc.protocol.dubbo.Constants.LAZY_CONNECT_INITIAL
 
 /**
  * dubbo protocol support class.
+ * <p>
+ * 仅仅是实现了一个引用计数功能，没有其他逻辑。
+ * <p>
+ * 内部定义了一个引用计数变量，每当该对象被引用一次referenceCount都会自增；
+ * 每当close方法被调用时，referenceCount进行自减。
+ * @see org.apache.dubbo.remoting.exchange.support.header.HeaderExchangeClient 这是下一层
  */
 @SuppressWarnings("deprecation")
 final class ReferenceCountExchangeClient implements ExchangeClient {
@@ -47,6 +53,7 @@ final class ReferenceCountExchangeClient implements ExchangeClient {
 
     public ReferenceCountExchangeClient(ExchangeClient client) {
         this.client = client;
+        // 引用计数自增
         referenceCount.incrementAndGet();
         this.url = client.getUrl();
     }
@@ -58,6 +65,7 @@ final class ReferenceCountExchangeClient implements ExchangeClient {
 
     @Override
     public CompletableFuture<Object> request(Object request) throws RemotingException {
+        // 直接调用被装饰对象的同签名方法
         return client.request(request);
     }
 

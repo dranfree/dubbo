@@ -167,6 +167,7 @@ public class DubboCodec extends ExchangeCodec {
     protected void encodeRequestData(Channel channel, ObjectOutput out, Object data, String version) throws IOException {
         RpcInvocation inv = (RpcInvocation) data;
 
+        // 一次序列化 dubbo version、path、version
         out.writeUTF(version);
         out.writeUTF(inv.getAttachment(PATH_KEY));
         out.writeUTF(inv.getAttachment(VERSION_KEY));
