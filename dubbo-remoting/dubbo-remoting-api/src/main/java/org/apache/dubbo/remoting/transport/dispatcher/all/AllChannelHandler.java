@@ -35,8 +35,10 @@ public class AllChannelHandler extends WrappedChannelHandler {
         super(handler, url);
     }
 
+    // 处理连接事件
     @Override
     public void connected(Channel channel) throws RemotingException {
+        // 获取线程池
         ExecutorService executor = getExecutorService();
         try {
             executor.execute(new ChannelEventRunnable(channel, handler, ChannelState.CONNECTED));
@@ -45,30 +47,37 @@ public class AllChannelHandler extends WrappedChannelHandler {
         }
     }
 
+    // 处理断开事件
     @Override
     public void disconnected(Channel channel) throws RemotingException {
         ExecutorService executor = getExecutorService();
         try {
             executor.execute(new ChannelEventRunnable(channel, handler, ChannelState.DISCONNECTED));
         } catch (Throwable t) {
-            throw new ExecutionException("disconnect event", channel, getClass() + " error when process disconnected event .", t);
+            throw new ExecutionException("disconnect event", channel,
+                    getClass() + " error when process disconnected event .", t);
         }
     }
 
+    // 处理请求和响应消息
+    // 这里的 message 可能是 Request 也可能是 Response
     @Override
     public void received(Channel channel, Object message) throws RemotingException {
         ExecutorService executor = getPreferredExecutorService(message);
         try {
+            // 派发到线程池
             executor.execute(new ChannelEventRunnable(channel, handler, ChannelState.RECEIVED, message));
         } catch (Throwable t) {
-        	if(message instanceof Request && t instanceof RejectedExecutionException){
+            if (message instanceof Request && t instanceof RejectedExecutionException) {
+                // 如果请求是双向通信，抛出此异常代表服务端线程池耗尽，返回错误信息。
                 sendFeedback(channel, (Request) message, t);
                 return;
-        	}
+            }
             throw new ExecutionException(message, channel, getClass() + " error when process received event .", t);
         }
     }
 
+    // 处理异常信息
     @Override
     public void caught(Channel channel, Throwable exception) throws RemotingException {
         ExecutorService executor = getExecutorService();

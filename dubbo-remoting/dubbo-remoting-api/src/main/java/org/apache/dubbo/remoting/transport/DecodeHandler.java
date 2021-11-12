@@ -28,6 +28,8 @@ import org.apache.dubbo.remoting.exchange.Response;
 
 /**
  * 解码处理器
+ *
+ * @see org.apache.dubbo.remoting.exchange.support.header.HeaderExchangeHandler 下一站
  */
 public class DecodeHandler extends AbstractChannelHandlerDelegate {
 
@@ -54,12 +56,17 @@ public class DecodeHandler extends AbstractChannelHandlerDelegate {
             decode(((Response) message).getResult());
         }
         // 继续委托处理
+        // next handler is HeaderExchangeHandler
         handler.received(channel, message);
     }
 
     private void decode(Object message) {
+        // Decodeable 接口目前有两个实现类：
+        // 1.DecodeableRpcInvocation
+        // 2.DecodeableRpcResult
         if (message instanceof Decodeable) {
             try {
+                // 执行解码逻辑
                 ((Decodeable) message).decode();
                 if (log.isDebugEnabled()) {
                     log.debug("Decode decodeable message " + message.getClass().getName());

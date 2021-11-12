@@ -24,6 +24,11 @@ import org.apache.dubbo.remoting.ChannelHandler;
 public class ChannelEventRunnable implements Runnable {
     private static final Logger logger = LoggerFactory.getLogger(ChannelEventRunnable.class);
 
+    /**
+     * 这里是解码器处理器
+     *
+     * @see org.apache.dubbo.remoting.transport.DecodeHandler
+     */
     private final ChannelHandler handler;
     private final Channel channel;
     private final ChannelState state;
@@ -52,6 +57,7 @@ public class ChannelEventRunnable implements Runnable {
 
     @Override
     public void run() {
+        // 请求和响应消息出现频率会很高，因此这里做针对性判断。
         if (state == ChannelState.RECEIVED) {
             try {
                 handler.received(channel, message);
@@ -61,38 +67,40 @@ public class ChannelEventRunnable implements Runnable {
             }
         } else {
             switch (state) {
-            case CONNECTED:
-                try {
-                    handler.connected(channel);
-                } catch (Exception e) {
-                    logger.warn("ChannelEventRunnable handle " + state + " operation error, channel is " + channel, e);
-                }
-                break;
-            case DISCONNECTED:
-                try {
-                    handler.disconnected(channel);
-                } catch (Exception e) {
-                    logger.warn("ChannelEventRunnable handle " + state + " operation error, channel is " + channel, e);
-                }
-                break;
-            case SENT:
-                try {
-                    handler.sent(channel, message);
-                } catch (Exception e) {
-                    logger.warn("ChannelEventRunnable handle " + state + " operation error, channel is " + channel
-                            + ", message is " + message, e);
-                }
-                break;
-            case CAUGHT:
-                try {
-                    handler.caught(channel, exception);
-                } catch (Exception e) {
-                    logger.warn("ChannelEventRunnable handle " + state + " operation error, channel is " + channel
-                            + ", message is: " + message + ", exception is " + exception, e);
-                }
-                break;
-            default:
-                logger.warn("unknown state: " + state + ", message is " + message);
+                case CONNECTED:
+                    try {
+                        handler.connected(channel);
+                    } catch (Exception e) {
+                        logger.warn("ChannelEventRunnable handle " + state + " operation error, channel is " + channel,
+                                e);
+                    }
+                    break;
+                case DISCONNECTED:
+                    try {
+                        handler.disconnected(channel);
+                    } catch (Exception e) {
+                        logger.warn("ChannelEventRunnable handle " + state + " operation error, channel is " + channel,
+                                e);
+                    }
+                    break;
+                case SENT:
+                    try {
+                        handler.sent(channel, message);
+                    } catch (Exception e) {
+                        logger.warn("ChannelEventRunnable handle " + state + " operation error, channel is " + channel
+                                + ", message is " + message, e);
+                    }
+                    break;
+                case CAUGHT:
+                    try {
+                        handler.caught(channel, exception);
+                    } catch (Exception e) {
+                        logger.warn("ChannelEventRunnable handle " + state + " operation error, channel is " + channel
+                                + ", message is: " + message + ", exception is " + exception, e);
+                    }
+                    break;
+                default:
+                    logger.warn("unknown state: " + state + ", message is " + message);
             }
         }
 

@@ -36,6 +36,8 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * NettyHandler
+ *
+ * @see NettyServer
  */
 @Sharable
 public class NettyHandler extends SimpleChannelHandler {
@@ -56,6 +58,7 @@ public class NettyHandler extends SimpleChannelHandler {
             throw new IllegalArgumentException("handler == null");
         }
         this.url = url;
+        // 这里的handler是NettyServer
         this.handler = handler;
     }
 

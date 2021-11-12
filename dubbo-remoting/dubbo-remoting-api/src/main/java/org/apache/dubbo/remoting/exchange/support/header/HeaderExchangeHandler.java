@@ -21,11 +21,7 @@ import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.remoting.Channel;
-import org.apache.dubbo.remoting.ChannelHandler;
-import org.apache.dubbo.remoting.Constants;
-import org.apache.dubbo.remoting.ExecutionException;
-import org.apache.dubbo.remoting.RemotingException;
+import org.apache.dubbo.remoting.*;
 import org.apache.dubbo.remoting.exchange.ExchangeChannel;
 import org.apache.dubbo.remoting.exchange.ExchangeHandler;
 import org.apache.dubbo.remoting.exchange.Request;
@@ -77,6 +73,7 @@ public class HeaderExchangeHandler implements ChannelHandlerDelegate {
 
     void handleRequest(final ExchangeChannel channel, Request req) throws RemotingException {
         Response res = new Response(req.getId(), req.getVersion());
+        // 检测不合法请求
         if (req.isBroken()) {
             Object data = req.getData();
 
@@ -89,6 +86,7 @@ public class HeaderExchangeHandler implements ChannelHandlerDelegate {
                 msg = data.toString();
             }
             res.setErrorMessage("Fail to decode request due to: " + msg);
+            // 不合法请求返回 BAD_REQUEST 状态码
             res.setStatus(Response.BAD_REQUEST);
 
             channel.send(res);
@@ -97,6 +95,8 @@ public class HeaderExchangeHandler implements ChannelHandlerDelegate {
         // find handler by message class.
         Object msg = req.getData();
         try {
+            // 继续向下调用
+            // next handler is DubboProtocol$ExchangeHandlerAdapter
             CompletionStage<Object> future = handler.reply(channel, msg);
             future.whenComplete((appResult, t) -> {
                 try {
@@ -104,6 +104,7 @@ public class HeaderExchangeHandler implements ChannelHandlerDelegate {
                         res.setStatus(Response.OK);
                         res.setResult(appResult);
                     } else {
+                        // 调用过程出现异常
                         res.setStatus(Response.SERVICE_ERROR);
                         res.setErrorMessage(StringUtils.toString(t));
                     }
@@ -169,17 +170,23 @@ public class HeaderExchangeHandler implements ChannelHandlerDelegate {
             // handle request.
             Request request = (Request) message;
             if (request.isEvent()) {
+                // 处理事件
                 handlerEvent(channel, request);
             } else {
+                // 处理普通请求
                 if (request.isTwoWay()) {
+                    // 向后调用服务，并得到调用结果，再将调用结果返回给消费方
                     handleRequest(exchangeChannel, request);
                 } else {
+                    // 如果是单向通信，仅向后指定服务即可，无需返回调用结果。
                     handler.received(exchangeChannel, request.getData());
                 }
             }
         } else if (message instanceof Response) {
+            // 服务消费方处理响应对象
             handleResponse(channel, (Response) message);
         } else if (message instanceof String) {
+            // telnet 相关
             if (isClientSide(channel)) {
                 Exception e = new Exception("Dubbo client can not supported string message: " + message + " in channel: " + channel + ", url: " + channel.getUrl());
                 logger.error(e.getMessage(), e);
