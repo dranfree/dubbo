@@ -53,6 +53,8 @@ public class Transporters {
         } else {
             handler = new ChannelHandlerDispatcher(handlers);
         }
+        // 默认是netty
+        // 获取自适应的Transporter实例（运行时根据url参数动态选择底层Transporter类型），并调用bind方法。
         return getTransporter().bind(url, handler);
     }
 

@@ -106,7 +106,7 @@ import static org.apache.dubbo.rpc.cluster.Constants.WARMUP_KEY;
 import static org.apache.dubbo.rpc.cluster.Constants.WEIGHT_KEY;
 
 /**
- * RegistryProtocol
+ * RegistryProtocol,导出服务到远程
  */
 public class RegistryProtocol implements Protocol {
     public static final String[] DEFAULT_REGISTER_PROVIDER_KEYS = {
@@ -169,7 +169,10 @@ public class RegistryProtocol implements Protocol {
     }
 
     public void register(URL registryUrl, URL registeredProviderUrl) {
+        // 获取注册中心
+        // AbstractRegistryFactory
         Registry registry = registryFactory.getRegistry(registryUrl);
+        // 注册服务
         registry.register(registeredProviderUrl);
 
         ProviderModel model = ApplicationModel.getProviderModel(registeredProviderUrl.getServiceKey());
@@ -182,6 +185,8 @@ public class RegistryProtocol implements Protocol {
 
     @Override
     public <T> Exporter<T> export(final Invoker<T> originInvoker) throws RpcException {
+        // 获取注册中心 URL，以 zookeeper 注册中心为例，得到的 URL 如下：
+        // zookeeper://127.0.0.1:2181/com.alibaba.dubbo.registry.RegistryService?application=demo-provider&dubbo=2.0.2&export=dubbo%3A%2F%2F172.17.48.52%3A20880%2Fcom.alibaba.dubbo.demo.DemoService%3Fanyhost%3Dtrue%26application%3Ddemo-provider
         URL registryUrl = getRegistryUrl(originInvoker);
         // url to export locally
         URL providerUrl = getProviderUrl(originInvoker);
@@ -204,6 +209,7 @@ public class RegistryProtocol implements Protocol {
         // decide if we need to delay publish
         boolean register = providerUrl.getParameter(REGISTER_KEY, true);
         if (register) {
+            // 向注册中心注册服务
             register(registryUrl, registeredProviderUrl);
         }
 
@@ -240,6 +246,7 @@ public class RegistryProtocol implements Protocol {
         String key = getCacheKey(originInvoker);
 
         return (ExporterChangeableWrapper<T>) bounds.computeIfAbsent(key, s -> {
+            // 创建 Invoker 为委托类对象
             Invoker<?> invokerDelegate = new InvokerDelegate<>(originInvoker, providerUrl);
             return new ExporterChangeableWrapper<>((Exporter<T>) protocol.export(invokerDelegate), originInvoker);
         });

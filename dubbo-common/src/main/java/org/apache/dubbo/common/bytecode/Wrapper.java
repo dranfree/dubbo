@@ -173,9 +173,17 @@ public abstract class Wrapper {
                         break;
                     }
                 }
+                // 对重载方法进行处理，考虑下面的方法；
+                // 1. void sayHello(Integer, String)
+                // 2. void sayHello(Integer, Integer)
+                // 方法名相同，参数列表长度也相同，因此不能仅通过这两项判断两个方法是否相等。
+                // 需要进一步判断方法的参数类型
                 if (override) {
                     if (len > 0) {
                         for (int l = 0; l < len; l++) {
+                            // 生成参数类型进行检测代码，比如：
+                            // && $3[0].getName().equals("java.lang.Integer")
+                            //    && $3[1].getName().equals("java.lang.String")
                             c3.append(" && ").append(" $3[").append(l).append("].getName().equals(\"")
                                     .append(m.getParameterTypes()[l].getName()).append("\")");
                         }

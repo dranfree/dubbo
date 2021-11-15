@@ -30,7 +30,7 @@ public class ZookeeperRegistryFactory extends AbstractRegistryFactory {
     private ZookeeperTransporter zookeeperTransporter;
 
     /**
-     * Invisible injection of zookeeper client via IOC/SPI
+     * Invisible injection of zookeeper client via IOC/SPI，由SPI注入
      * @param zookeeperTransporter
      */
     public void setZookeeperTransporter(ZookeeperTransporter zookeeperTransporter) {

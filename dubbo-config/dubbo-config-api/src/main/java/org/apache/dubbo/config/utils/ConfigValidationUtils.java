@@ -174,11 +174,13 @@ public class ConfigValidationUtils {
         if (CollectionUtils.isNotEmpty(registries)) {
             for (RegistryConfig config : registries) {
                 String address = config.getAddress();
+                // 若address为空，则将其设为0.0.0.0
                 if (StringUtils.isEmpty(address)) {
                     address = ANYHOST_VALUE;
                 }
                 if (!RegistryConfig.NO_AVAILABLE.equalsIgnoreCase(address)) {
                     Map<String, String> map = new HashMap<String, String>();
+                    // 添加 ApplicationConfig 中的字段信息到 map 中
                     AbstractConfig.appendParameters(map, application);
                     AbstractConfig.appendParameters(map, config);
                     map.put(PATH_KEY, RegistryService.class.getName());

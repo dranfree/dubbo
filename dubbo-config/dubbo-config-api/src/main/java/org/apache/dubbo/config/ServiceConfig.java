@@ -181,6 +181,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
     }
 
     public synchronized void export() {
+        // <dubbo:provider export="false" />
         if (!shouldExport()) {
             return;
         }
@@ -201,6 +202,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         serviceMetadata.setTarget(getRef());
 
         if (shouldDelay()) {
+            // 延迟暴露
             DELAY_EXPORT_EXECUTOR.schedule(this::doExport, getDelay(), TimeUnit.MILLISECONDS);
         } else {
             doExport();
@@ -217,6 +219,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
     private void checkAndUpdateSubConfigs() {
         // Use default configs defined explicitly with global scope
         completeCompoundConfigs();
+        // 检查provider是否为空，为空则新建一个，并通过系统变量为其初始化。
         checkDefault();
         checkProtocol();
         // init some null configuration.
@@ -312,6 +315,8 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
                 serviceMetadata
         );
 
+        // 多协议多注册中心导出
+
         List<URL> registryURLs = ConfigValidationUtils.loadRegistries(this, true);
 
         for (ProtocolConfig protocolConfig : protocols) {
@@ -329,13 +334,15 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
     private void doExportUrlsFor1Protocol(ProtocolConfig protocolConfig, List<URL> registryURLs) {
         String name = protocolConfig.getName();
         if (StringUtils.isEmpty(name)) {
-            name = DUBBO;
+            name = DUBBO; // 缺省协议配置
         }
 
         Map<String, String> map = new HashMap<String, String>();
         map.put(SIDE_KEY, PROVIDER_SIDE);
 
+        // 添加pid、时间戳、版本号等参数
         ServiceConfig.appendRuntimeParameters(map);
+        // 通过反射将对象的字段添加进去
         AbstractConfig.appendParameters(map, getMetrics());
         AbstractConfig.appendParameters(map, getApplication());
         AbstractConfig.appendParameters(map, getModule());
@@ -348,6 +355,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         if (metadataReportConfig != null && metadataReportConfig.isValid()) {
             map.putIfAbsent(METADATA_KEY, REMOTE_METADATA_STORAGE_TYPE);
         }
+        // 添加callback配置，可忽略。
         if (CollectionUtils.isNotEmpty(getMethods())) {
             for (MethodConfig method : getMethods()) {
                 AbstractConfig.appendParameters(map, method, method.getName());
@@ -455,6 +463,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         // don't export when none is configured
         if (!SCOPE_NONE.equalsIgnoreCase(scope)) {
 
+            // injvm
             // export to local if the config is not remote (export to remote only when config is remote)
             if (!SCOPE_REMOTE.equalsIgnoreCase(scope)) {
                 exportLocal(url);
@@ -493,9 +502,12 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
                         exporters.add(exporter);
                     }
                 } else {
+                    // 不存在注册中心，仅导出服务。
                     if (logger.isInfoEnabled()) {
                         logger.info("Export dubbo service " + interfaceClass.getName() + " to url " + url);
                     }
+                    // ！创建Invoker实例
+                    // 这里的PROXY_FACTORY默认实现是：org.apache.dubbo.rpc.proxy.javassist.JavassistProxyFactory
                     Invoker<?> invoker = PROXY_FACTORY.getInvoker(ref, (Class) interfaceClass, url);
                     DelegateProviderMetaDataInvoker wrapperInvoker = new DelegateProviderMetaDataInvoker(invoker, this);
 
@@ -525,6 +537,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
                 .setHost(LOCALHOST_VALUE)
                 .setPort(0)
                 .build();
+        // InjvmProtocol
         Exporter<?> exporter = PROTOCOL.export(
                 PROXY_FACTORY.getInvoker(ref, (Class) interfaceClass, local));
         exporters.add(exporter);

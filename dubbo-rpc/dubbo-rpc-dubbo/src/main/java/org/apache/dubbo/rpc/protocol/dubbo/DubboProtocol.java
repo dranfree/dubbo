@@ -292,6 +292,8 @@ public class DubboProtocol extends AbstractProtocol {
         URL url = invoker.getUrl();
 
         // export service.
+        // 获取服务坐标，由服务组名，服务名，服务版本号以及端口组成。比如：
+        // demoGroup/com.alibaba.dubbo.demo.DemoService:1.0.1:20880
         String key = serviceKey(url);
         DubboExporter<T> exporter = new DubboExporter<T>(invoker, key, exporterMap);
         exporterMap.put(key, exporter);
@@ -322,6 +324,8 @@ public class DubboProtocol extends AbstractProtocol {
         //client can export a service which's only for server to invoke
         boolean isServer = url.getParameter(IS_SERVER_KEY, true);
         if (isServer) {
+            // 访问缓存
+            // 双重检验加锁
             ProtocolServer server = serverMap.get(key);
             if (server == null) {
                 synchronized (this) {
@@ -347,10 +351,11 @@ public class DubboProtocol extends AbstractProtocol {
                 .build();
         String str = url.getParameter(SERVER_KEY, DEFAULT_REMOTING_SERVER);
 
+        // 检查是否存在server参数所代表的Transporter扩展，不存在则抛出异常。
         if (str != null && str.length() > 0 && !ExtensionLoader.getExtensionLoader(Transporter.class).hasExtension(str)) {
             throw new RpcException("Unsupported server type: " + str + ", url: " + url);
         }
-
+        // HeaderExchangeServer
         ExchangeServer server;
         try {
             server = Exchangers.bind(url, requestHandler);
@@ -360,6 +365,7 @@ public class DubboProtocol extends AbstractProtocol {
 
         str = url.getParameter(CLIENT_KEY);
         if (str != null && str.length() > 0) {
+            // 检测是否支持clent参数所代表的Transporter扩展，不支持则抛出异常。
             Set<String> supportedTypes = ExtensionLoader.getExtensionLoader(Transporter.class).getSupportedExtensions();
             if (!supportedTypes.contains(str)) {
                 throw new RpcException("Unsupported client type: " + str);
