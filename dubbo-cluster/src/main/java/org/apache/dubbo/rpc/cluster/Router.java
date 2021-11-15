@@ -27,6 +27,15 @@ import java.util.List;
  * Router. (SPI, Prototype, ThreadSafe)
  * <p>
  * <a href="http://en.wikipedia.org/wiki/Routing">Routing</a>
+ * <p>
+ * 服务路由包含一条路由规则，路由规则决定了服务消费者的调用目标，即规定了服务消费者可调用哪些服务提供者。
+ * <p>
+ * 三种路由：
+ * <ol>
+ *     <li>标签路由：{@link org.apache.dubbo.rpc.cluster.router.tag.TagRouter}</li>
+ *     <li>脚本路由：{@link org.apache.dubbo.rpc.cluster.router.script.ScriptRouter}</li>
+ *     <li>条件路由：{@link org.apache.dubbo.rpc.cluster.router.condition.ConditionRouter}</li>
+ * </ol>
  *
  * @see org.apache.dubbo.rpc.cluster.Cluster#join(Directory)
  * @see org.apache.dubbo.rpc.cluster.Directory#list(Invocation)
