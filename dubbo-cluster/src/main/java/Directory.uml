@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Diagram>
+  <ID>JAVA</ID>
+  <OriginalElement>org.apache.dubbo.rpc.cluster.directory.StaticDirectory</OriginalElement>
+  <nodes>
+    <node x="40.0" y="83.0">org.apache.dubbo.rpc.cluster.Directory</node>
+    <node x="80.0" y="0.0">org.apache.dubbo.common.Node</node>
+    <node x="10.0" y="249.0">org.apache.dubbo.rpc.cluster.directory.StaticDirectory</node>
+    <node x="275.0" y="249.0">org.apache.dubbo.registry.integration.RegistryDirectory</node>
+    <node x="0.0" y="166.0">org.apache.dubbo.rpc.cluster.directory.AbstractDirectory</node>
+    <node x="371.25" y="166.0">org.apache.dubbo.registry.NotifyListener</node>
+  </nodes>
+  <notes />
+  <edges>
+    <edge source="org.apache.dubbo.rpc.cluster.Directory" target="org.apache.dubbo.common.Node" relationship="INTERFACE_GENERALIZATION">
+      <point x="0.0" y="-16.5" />
+      <point x="0.0" y="16.5" />
+    </edge>
+    <edge source="org.apache.dubbo.rpc.cluster.directory.AbstractDirectory" target="org.apache.dubbo.rpc.cluster.Directory" relationship="REALIZATION">
+      <point x="0.0" y="-16.5" />
+      <point x="0.0" y="16.5" />
+    </edge>
+    <edge source="org.apache.dubbo.rpc.cluster.directory.StaticDirectory" target="org.apache.dubbo.rpc.cluster.directory.AbstractDirectory" relationship="GENERALIZATION">
+      <point x="0.0" y="-16.5" />
+      <point x="0.0" y="16.5" />
+    </edge>
+    <edge source="org.apache.dubbo.registry.integration.RegistryDirectory" target="org.apache.dubbo.rpc.cluster.directory.AbstractDirectory" relationship="GENERALIZATION">
+      <point x="-66.25" y="-16.5" />
+      <point x="341.25" y="224.0" />
+      <point x="132.5" y="224.0" />
+      <point x="0.0" y="16.5" />
+    </edge>
+    <edge source="org.apache.dubbo.registry.integration.RegistryDirectory" target="org.apache.dubbo.registry.NotifyListener" relationship="REALIZATION">
+      <point x="66.25" y="-16.5" />
+      <point x="0.0" y="16.5" />
+    </edge>
+  </edges>
+  <settings layout="Hierarchic" zoom="1.0" showDependencies="false" x="-89.0" y="141.0" />
+  <SelectedNodes />
+  <Categories />
+  <SCOPE>All</SCOPE>
+  <VISIBILITY>private</VISIBILITY>
+</Diagram>
+

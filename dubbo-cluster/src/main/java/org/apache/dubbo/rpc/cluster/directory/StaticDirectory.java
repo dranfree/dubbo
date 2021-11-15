@@ -29,7 +29,7 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * StaticDirectory
+ * StaticDirectory，静态服务目录实现，里面存放的 Invokers 是不会变化的。
  */
 public class StaticDirectory<T> extends AbstractDirectory<T> {
     private static final Logger logger = LoggerFactory.getLogger(StaticDirectory.class);
@@ -72,6 +72,7 @@ public class StaticDirectory<T> extends AbstractDirectory<T> {
             return false;
         }
         for (Invoker<T> invoker : invokers) {
+            // 只要有一个 Invoker 是可用的，就认为当前目录是可用的
             if (invoker.isAvailable()) {
                 return true;
             }
@@ -85,6 +86,7 @@ public class StaticDirectory<T> extends AbstractDirectory<T> {
             return;
         }
         super.destroy();
+        // 遍历 Invoker 列表，并执行 destroy 逻辑。
         for (Invoker<T> invoker : invokers) {
             invoker.destroy();
         }
@@ -102,6 +104,7 @@ public class StaticDirectory<T> extends AbstractDirectory<T> {
         List<Invoker<T>> finalInvokers = invokers;
         if (routerChain != null) {
             try {
+                // 进行服务路由
                 finalInvokers = routerChain.route(getConsumerUrl(), invocation);
             } catch (Throwable t) {
                 logger.error("Failed to execute router: " + getUrl() + ", cause: " + t.getMessage(), t);
