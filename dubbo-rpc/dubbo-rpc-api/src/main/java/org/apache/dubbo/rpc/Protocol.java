@@ -43,6 +43,13 @@ public interface Protocol {
      * 2. export() must be idempotent, that is, there's no difference between invoking once and invoking twice when
      * export the same URL<br>
      * 3. Invoker instance is passed in by the framework, protocol needs not to care <br>
+     * <br>
+     * 导出服务：
+     * <ol>
+     *     <li>Protocol应该记录请求源地址：{@code RpcContext.getContext().setRemoteAddress();}</li>
+     *     <li>必须幂等，即导出相同的URL多次，其结果应该是相同的。</li>
+     *     <li>Protocol不用关心Invoker实例的来源，由框架从外部组装好传入。</li>
+     * </ol>
      *
      * @param <T>     Service type
      * @param invoker Service invoker
