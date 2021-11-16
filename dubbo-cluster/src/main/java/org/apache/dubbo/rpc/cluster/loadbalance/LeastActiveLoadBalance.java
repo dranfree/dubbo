@@ -25,7 +25,11 @@ import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
 /**
- * LeastActiveLoadBalance
+ * 最小活跃调用数负载均衡
+ * <p>
+ * 活跃调用数越小，表明该服务提供者效率越高，单位时间内可处理更多的请求。此时应优先将请求分配给该服务提供者。
+ * <p>
+ * 基本实现思想：每收到一个请求，活跃数加1，完成请求后则将活跃数减1。
  * <p>
  * Filter the number of invokers with the least number of active calls and count the weights and quantities of these invokers.
  * If there is only one invoker, use the invoker directly;
@@ -40,8 +44,10 @@ public class LeastActiveLoadBalance extends AbstractLoadBalance {
     protected <T> Invoker<T> doSelect(List<Invoker<T>> invokers, URL url, Invocation invocation) {
         // Number of invokers
         int length = invokers.size();
+        // 最小活跃数
         // The least active value of all invokers
         int leastActive = -1;
+        // 具有“最小活跃数”的服务提供者数量
         // The number of invokers having the same least active value (leastActive)
         int leastCount = 0;
         // The index of invokers having the same least active value (leastActive)

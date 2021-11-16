@@ -55,16 +55,21 @@ public class ConsistentHashLoadBalance extends AbstractLoadBalance {
     protected <T> Invoker<T> doSelect(List<Invoker<T>> invokers, URL url, Invocation invocation) {
         String methodName = RpcUtils.getMethodName(invocation);
         String key = invokers.get(0).getUrl().getServiceKey() + "." + methodName;
+        // 获取 invokers 原始的 hashcode
         // using the hashcode of list to compute the hash only pay attention to the elements in the list
         int invokersHashCode = invokers.hashCode();
+        // 如果 invokers 是一个新的 List 对象，意味着服务提供者数量发生了变化，可能新增也可能减少了。
+        // 此时 selector.identityHashCode != identityHashCode 条件成立
         ConsistentHashSelector<T> selector = (ConsistentHashSelector<T>) selectors.get(key);
         if (selector == null || selector.identityHashCode != invokersHashCode) {
+            // 创建新的 ConsistentHashSelector
             selectors.put(key, new ConsistentHashSelector<T>(invokers, methodName, invokersHashCode));
             selector = (ConsistentHashSelector<T>) selectors.get(key);
         }
         return selector.select(invocation);
     }
 
+    // TODO
     private static final class ConsistentHashSelector<T> {
 
         private final TreeMap<Long, Invoker<T>> virtualInvokers;
@@ -79,7 +84,9 @@ public class ConsistentHashLoadBalance extends AbstractLoadBalance {
             this.virtualInvokers = new TreeMap<Long, Invoker<T>>();
             this.identityHashCode = identityHashCode;
             URL url = invokers.get(0).getUrl();
+            // 获取虚拟节点数量，默认是160。
             this.replicaNumber = url.getMethodParameter(methodName, HASH_NODES, 160);
+            // 获取参与 hash 计算的参数下标值，默认对第一个参数进行 hash 运算。
             String[] index = COMMA_SPLIT_PATTERN.split(url.getMethodParameter(methodName, HASH_ARGUMENTS, "0"));
             argumentIndex = new int[index.length];
             for (int i = 0; i < index.length; i++) {
