@@ -29,8 +29,10 @@ import org.apache.dubbo.rpc.cluster.support.AbstractClusterInvoker;
 @SPI
 public interface ClusterInterceptor {
 
+    // 在选择具体的提供方之前调用
     void before(AbstractClusterInvoker<?> clusterInvoker, Invocation invocation);
 
+    // 在响应结果处理完成之后回调
     void after(AbstractClusterInvoker<?> clusterInvoker, Invocation invocation);
 
     /**
