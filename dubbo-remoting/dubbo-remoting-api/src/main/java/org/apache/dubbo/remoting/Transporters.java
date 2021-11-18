@@ -72,8 +72,11 @@ public class Transporters {
         } else if (handlers.length == 1) {
             handler = handlers[0];
         } else {
+            // 若 handler 数量大于 1，则创建一个分发器。
             handler = new ChannelHandlerDispatcher(handlers);
         }
+        // NettyTransporter，只是用来创建 NettyClient 的。
+        // 这里会直接打开底层的 NettyClient
         return getTransporter().connect(url, handler);
     }
 

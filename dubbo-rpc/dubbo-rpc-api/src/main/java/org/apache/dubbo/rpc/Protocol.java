@@ -74,6 +74,8 @@ public interface Protocol {
      * @return invoker service's local proxy
      * @throws RpcException when there's any error while connecting to the service provider
      */
+    // 自适应扩展中取扩展点名称的代码：
+    // String extName = (url.getProtocol() == null ? "dubbo" : url.getProtocol());
     @Adaptive
     <T> Invoker<T> refer(Class<T> type, URL url) throws RpcException;
 

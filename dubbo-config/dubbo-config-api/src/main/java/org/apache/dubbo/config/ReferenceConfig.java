@@ -249,7 +249,7 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
     @SuppressWarnings({"unchecked", "rawtypes", "deprecation"})
     private T createProxy(Map<String, String> map) {
         if (shouldJvmRefer(map)) {
-            // 创建本地引用
+            // 创建本地引用，构建 InjvmInvoker 实例。
             URL url = new URL(LOCAL_PROTOCOL, LOCALHOST_VALUE, 0, interfaceClass.getName()).addParameters(map);
             invoker = REF_PROTOCOL.refer(interfaceClass, url);
             if (logger.isInfoEnabled()) {
@@ -298,6 +298,8 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
 
             // TODO 2021-11-17 读到这里
             if (urls.size() == 1) {
+                // 单个注册中心或服务提供者（服务直连）
+                // 调用 RegistryProtocol 的 refer 方法构建 Invoker 实例
                 invoker = REF_PROTOCOL.refer(interfaceClass, urls.get(0));
             } else {
                 List<Invoker<?>> invokers = new ArrayList<Invoker<?>>();
