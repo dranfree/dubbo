@@ -47,6 +47,10 @@ import static org.apache.dubbo.rpc.protocol.dubbo.Constants.*;
 
 /**
  * dubbo protocol support.
+ * <ol>
+ *     <li>导出：打开本地服务端口，注册交给 RegistryProtocol 去做。</li>
+ *     <li>引用：获取单个服务提供者的 Invoker 引用，集群容错交给 RegistryProtocol 去做。</li>
+ * </ol>
  */
 public class DubboProtocol extends AbstractProtocol {
 
@@ -271,6 +275,7 @@ public class DubboProtocol extends AbstractProtocol {
             }
         }
 
+        // 启动服务器
         openServer(url);
         optimizeSerialization(url);
 

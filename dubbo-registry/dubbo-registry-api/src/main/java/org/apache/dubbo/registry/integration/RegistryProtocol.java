@@ -62,7 +62,11 @@ import static org.apache.dubbo.rpc.Constants.*;
 import static org.apache.dubbo.rpc.cluster.Constants.*;
 
 /**
- * RegistryProtocol,导出服务到远程
+ * RegistryProtocol,注册中心协议
+ * <ol>
+ *     <li>导出：负责远程服务注册，暴露端口的事情交给 DubboProtocol 去做。</li>
+ *     <li>引用：将多个服务提供者，通过Cluster扩展点，伪装成单个提供者引用（Invoker）返回。</li>
+ * </ol>
  */
 public class RegistryProtocol implements Protocol {
     public static final String[] DEFAULT_REGISTER_PROVIDER_KEYS = {
@@ -157,7 +161,8 @@ public class RegistryProtocol implements Protocol {
         overrideListeners.put(overrideSubscribeUrl, overrideSubscribeListener);
 
         providerUrl = overrideUrlWithConfig(providerUrl, overrideSubscribeListener);
-        //export invoker
+        // export invoker
+        // 创建 DubboExporter 实例，启动本地服务监听。
         final ExporterChangeableWrapper<T> exporter = doLocalExport(originInvoker, providerUrl);
 
         // url to registry

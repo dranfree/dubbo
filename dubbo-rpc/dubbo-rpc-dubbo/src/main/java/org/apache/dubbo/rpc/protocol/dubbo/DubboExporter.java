@@ -23,7 +23,7 @@ import org.apache.dubbo.rpc.protocol.AbstractExporter;
 import java.util.Map;
 
 /**
- * DubboExporter
+ * DubboExporter，导出的时候使用，也保存一个ProxyFactory生成的Invoker对象。
  */
 public class DubboExporter<T> extends AbstractExporter<T> {
 
