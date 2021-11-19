@@ -414,6 +414,8 @@ public class DubboProtocol extends AbstractProtocol {
 
             } else {
                 // ExchangeClient
+                // 可以通过client参数配置底层通信客户端类型，Transporter扩展点。
+                // Refenrece#client()
                 // 不具备通信功能，需要基于更加底层的通信客户端，例如 NettyClient、MinaClient 等。
                 clients[i] = initClient(url);
             }
@@ -571,6 +573,7 @@ public class DubboProtocol extends AbstractProtocol {
         try {
             // connection should be lazy
             if (url.getParameter(LAZY_CONNECT_KEY, false)) {
+                // 配置lazy参数
                 // 创建懒加载 ExchangeClient 实例
                 client = new LazyConnectExchangeClient(url, requestHandler);
 

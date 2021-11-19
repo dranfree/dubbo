@@ -22,39 +22,20 @@ import org.apache.dubbo.common.extension.support.ActivateComparator;
 import org.apache.dubbo.common.lang.Prioritized;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.utils.ArrayUtils;
-import org.apache.dubbo.common.utils.ClassUtils;
-import org.apache.dubbo.common.utils.CollectionUtils;
-import org.apache.dubbo.common.utils.ConcurrentHashSet;
-import org.apache.dubbo.common.utils.ConfigUtils;
-import org.apache.dubbo.common.utils.Holder;
-import org.apache.dubbo.common.utils.ReflectUtils;
-import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.common.utils.*;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.LinkedHashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.regex.Pattern;
 
 import static java.util.Collections.sort;
-import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SPLIT_PATTERN;
-import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.REMOVE_VALUE_PREFIX;
+import static org.apache.dubbo.common.constants.CommonConstants.*;
 
 /**
  *
@@ -317,6 +298,7 @@ public class ExtensionLoader<T> {
             for (Map.Entry<String, String> entry : url.getParameters().entrySet()) {
                 String k = entry.getKey();
                 String v = entry.getValue();
+                // 只要 value 不是 空/false/0/null/N/A 之一就会被激活
                 if ((k.equals(key) || k.endsWith("." + key))
                         && ((keyValue != null && keyValue.equals(v)) || (keyValue == null && ConfigUtils.isNotEmpty(v)))) {
                     return true;
@@ -393,6 +375,7 @@ public class ExtensionLoader<T> {
         if (StringUtils.isEmpty(name)) {
             throw new IllegalArgumentException("Extension name == null");
         }
+        // 配置为true的时候取默认扩展点，否则以配置值为准。
         if ("true".equals(name)) {
             return getDefaultExtension();
         }

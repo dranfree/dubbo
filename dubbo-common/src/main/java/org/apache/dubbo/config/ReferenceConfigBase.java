@@ -223,9 +223,11 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
     }
 
     public void resolveFile() {
+        // 从JVM参数中获取“直连服务提供者”配置
         String resolve = System.getProperty(interfaceName);
         String resolveFile = null;
         if (StringUtils.isEmpty(resolve)) {
+            // 从 dubbo-resolve.properties 文件中读取“直连服务提供者”配置
             resolveFile = System.getProperty("dubbo.resolve.file");
             if (StringUtils.isEmpty(resolveFile)) {
                 File userResolveFile = new File(new File(System.getProperty("user.home")), "dubbo-resolve.properties");
@@ -245,6 +247,7 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
             }
         }
         if (resolve != null && resolve.length() > 0) {
+            // 设置“直连服务提供者”地址
             url = resolve;
             if (logger.isWarnEnabled()) {
                 if (resolveFile != null) {

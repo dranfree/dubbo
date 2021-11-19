@@ -296,7 +296,6 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
                 }
             }
 
-            // TODO 2021-11-17 读到这里
             if (urls.size() == 1) {
                 // 单个注册中心或服务提供者（服务直连）
                 // 调用 RegistryProtocol 的 refer 方法构建 Invoker 实例

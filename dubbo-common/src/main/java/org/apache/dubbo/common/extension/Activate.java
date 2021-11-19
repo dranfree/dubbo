@@ -18,11 +18,7 @@ package org.apache.dubbo.common.extension;
 
 import org.apache.dubbo.common.URL;
 
-import java.lang.annotation.Documented;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import java.lang.annotation.*;
 
 /**
  * Activate. This annotation is useful for automatically activate certain extensions with the given criteria,
@@ -53,6 +49,8 @@ public @interface Activate {
     String[] group() default {};
 
     /**
+     * URL参数上只要有这些key之一，被注解的扩展点就会自动激活。
+     * <p>
      * Activate the current extension when the specified keys appear in the URL's parameters.
      * <p>
      * For example, given <code>@Activate("cache, validation")</code>, the current extension will be return only when
