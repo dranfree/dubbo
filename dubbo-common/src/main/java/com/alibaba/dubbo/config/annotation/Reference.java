@@ -130,9 +130,15 @@ public @interface Reference {
     String stub() default "";
 
     /**
-     * TODO
+     * 配置集群容错策略
      *
-     * @return
+     * @see {@code FailbackCluster}
+     * @see {@code FailoverCluster}
+     * @see {@code FailfastCluster}
+     * @see {@code FailsafeCluster}
+     * @see {@code ForkingCluster}
+     * @see {@code MergeableCluster}
+     * @see {@code BroadcastCluster}
      */
     String cluster() default "";
 
