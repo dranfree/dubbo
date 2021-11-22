@@ -27,7 +27,7 @@ import java.util.concurrent.CompletableFuture;
 
 @Component("demoServiceComponent")
 public class DemoServiceComponent implements DemoService {
-    @Reference(timeout = 10000, async = true)
+    @Reference(timeout = 10000)
     private DemoService demoService;
 
     @Override

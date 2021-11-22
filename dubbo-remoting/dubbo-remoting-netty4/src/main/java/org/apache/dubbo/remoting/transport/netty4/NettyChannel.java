@@ -73,6 +73,8 @@ final class NettyChannel extends AbstractChannel {
     }
 
     /**
+     * Dubbo Channel 和 Netty Channel 之间的一一映射
+     * <p>
      * Get dubbo channel by netty channel through channel cache.
      * Put netty channel into it if dubbo channel don't exist in the cache.
      *
