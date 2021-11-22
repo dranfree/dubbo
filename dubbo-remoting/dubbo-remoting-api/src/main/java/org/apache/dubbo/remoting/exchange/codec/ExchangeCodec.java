@@ -105,6 +105,7 @@ public class ExchangeCodec extends TelnetCodec {
         }
         // check length.
         if (readable < HEADER_LENGTH) {
+            // 头部字段没有读完，返回需要更多输入（拆包）。
             return DecodeResult.NEED_MORE_INPUT;
         }
 
@@ -114,8 +115,11 @@ public class ExchangeCodec extends TelnetCodec {
 
         int tt = len + HEADER_LENGTH;
         if (readable < tt) {
+            // 数据体没有读完，返回需要更多数据（拆包）。
             return DecodeResult.NEED_MORE_INPUT;
         }
+
+        // 读完了完整的 Request / Response 数据，开始对数据体解码。
 
         // limit input stream.
         ChannelBufferInputStream is = new ChannelBufferInputStream(buffer, len);

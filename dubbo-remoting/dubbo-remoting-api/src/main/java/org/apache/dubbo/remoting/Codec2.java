@@ -38,10 +38,10 @@ public interface Codec2 {
     // 拆包、粘包相关
     enum DecodeResult {
 
-        // 需要更多输入，粘包
+        // 需要更多输入，拆包
         NEED_MORE_INPUT,
 
-        // 舍弃一些输入，拆包
+        // 舍弃一些输入，粘包
         SKIP_SOME_INPUT
     }
 
