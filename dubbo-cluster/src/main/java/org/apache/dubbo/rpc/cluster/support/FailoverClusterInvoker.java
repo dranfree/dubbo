@@ -100,6 +100,7 @@ public class FailoverClusterInvoker<T> extends AbstractClusterInvoker<T> {
                 }
                 return result;
             } catch (RpcException e) {
+                // 如果是业务层抛出的异常，这里直接抛出即可，就没必要做重试了。
                 if (e.isBiz()) { // biz exception.
                     throw e;
                 }
@@ -110,7 +111,7 @@ public class FailoverClusterInvoker<T> extends AbstractClusterInvoker<T> {
                 providers.add(invoker.getUrl().getAddress());
             }
         }
-        // 超出重试次数，抛出异常。
+        // 超出重试次数，抛出异常，这个异常我们在工作中会经常碰到。
         throw new RpcException(le.getCode(), "Failed to invoke the method "
                 + methodName + " in the service " + getInterface().getName()
                 + ". Tried " + len + " times of the providers " + providers
