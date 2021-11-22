@@ -40,6 +40,7 @@ public final class DubboCountCodec implements Codec2 {
         codec.encode(channel, buffer, msg);
     }
 
+    // TODO
     @Override
     public Object decode(Channel channel, ChannelBuffer buffer) throws IOException {
         int save = buffer.readerIndex();
