@@ -48,8 +48,10 @@ public class DefaultFuture extends CompletableFuture<Object> {
 
     private static final Logger logger = LoggerFactory.getLogger(DefaultFuture.class);
 
+    // RPC ID 和 Channel 的映射
     private static final Map<Long, Channel> CHANNELS = new ConcurrentHashMap<>();
 
+    // RPC ID 和 DefaultFuture 的映射
     private static final Map<Long, DefaultFuture> FUTURES = new ConcurrentHashMap<>();
 
     public static final Timer TIME_OUT_TIMER = new HashedWheelTimer(
@@ -159,6 +161,13 @@ public class DefaultFuture extends CompletableFuture<Object> {
         }
     }
 
+    /**
+     * 通过id建立DefaultFuture和Response之间的关系
+     *
+     * @param channel  ~
+     * @param response ~
+     * @see org.apache.dubbo.remoting.exchange.support.header.HeaderExchangeHandler 接收回调
+     */
     public static void received(Channel channel, Response response) {
         received(channel, response, false);
     }
