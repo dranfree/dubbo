@@ -48,6 +48,8 @@ public class DubboInvoker<T> extends AbstractInvoker<T> {
 
     private final ReentrantLock destroyLock = new ReentrantLock();
 
+    // 这个集合是从 DubboProtocol 中传过来的，保存的是所有的 Invoker 实例。
+    // 当此类被销毁（destroy）的时候，会将自己从这个集合中移除，解除强引用。
     private final Set<Invoker<?>> invokers;
 
     public DubboInvoker(Class<T> serviceType, URL url, ExchangeClient[] clients) {
