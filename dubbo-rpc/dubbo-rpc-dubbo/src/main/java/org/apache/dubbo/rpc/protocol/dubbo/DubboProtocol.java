@@ -257,6 +257,7 @@ public class DubboProtocol extends AbstractProtocol {
         // export service.
         // 获取服务坐标，由服务组名，服务名，服务版本号以及端口组成。比如：
         // demoGroup/com.alibaba.dubbo.demo.DemoService:1.0.1:20880
+        // 分组默认为空：com.alibaba.dubbo.demo.DemoService:1.0.1:20880
         String key = serviceKey(url);
         DubboExporter<T> exporter = new DubboExporter<T>(invoker, key, exporterMap);
         exporterMap.put(key, exporter);
