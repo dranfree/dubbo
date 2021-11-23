@@ -285,12 +285,14 @@ public class DubboProtocol extends AbstractProtocol {
 
     private void openServer(URL url) {
         // find server.
+        // key is like: 10.113.128.48:20880
         String key = url.getAddress();
         //client can export a service which's only for server to invoke
         boolean isServer = url.getParameter(IS_SERVER_KEY, true);
         if (isServer) {
             // 访问缓存
             // 双重检验加锁
+            // 多协议导出的时候，这里会创建多个服务监听，一般只会有一个。
             ProtocolServer server = serverMap.get(key);
             if (server == null) {
                 synchronized (this) {
