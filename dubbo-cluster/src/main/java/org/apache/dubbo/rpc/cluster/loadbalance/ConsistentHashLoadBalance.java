@@ -54,6 +54,7 @@ public class ConsistentHashLoadBalance extends AbstractLoadBalance {
     @Override
     protected <T> Invoker<T> doSelect(List<Invoker<T>> invokers, URL url, Invocation invocation) {
         String methodName = RpcUtils.getMethodName(invocation);
+        // {group}/{interfaceName}:{version}
         String key = invokers.get(0).getUrl().getServiceKey() + "." + methodName;
         // 获取 invokers 原始的 hashcode
         // using the hashcode of list to compute the hash only pay attention to the elements in the list
@@ -69,7 +70,7 @@ public class ConsistentHashLoadBalance extends AbstractLoadBalance {
         return selector.select(invocation);
     }
 
-    // TODO
+    // 这个类就代表一致性哈希的那个环
     private static final class ConsistentHashSelector<T> {
 
         private final TreeMap<Long, Invoker<T>> virtualInvokers;
@@ -94,6 +95,7 @@ public class ConsistentHashLoadBalance extends AbstractLoadBalance {
             }
             for (Invoker<T> invoker : invokers) {
                 String address = invoker.getUrl().getAddress();
+                // 每个 Invoker 创建 160 个虚拟节点均匀分散到哈希环上，保证调用分配均匀。
                 for (int i = 0; i < replicaNumber / 4; i++) {
                     byte[] digest = md5(address + i);
                     for (int h = 0; h < 4; h++) {
