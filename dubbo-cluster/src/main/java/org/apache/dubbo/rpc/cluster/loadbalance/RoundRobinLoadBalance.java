@@ -29,7 +29,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
- * Round robin load balance. 平滑加权轮询算法
+ * Round robin load balance. 平滑加权轮询算法，算法来自 Nginx 的实现。
  */
 public class RoundRobinLoadBalance extends AbstractLoadBalance {
     public static final String NAME = "roundrobin";
