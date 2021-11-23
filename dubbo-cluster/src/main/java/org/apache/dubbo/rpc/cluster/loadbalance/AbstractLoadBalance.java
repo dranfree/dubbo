@@ -27,10 +27,7 @@ import java.util.List;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMESTAMP_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_SERVICE_REFERENCE_PATH;
-import static org.apache.dubbo.rpc.cluster.Constants.DEFAULT_WARMUP;
-import static org.apache.dubbo.rpc.cluster.Constants.DEFAULT_WEIGHT;
-import static org.apache.dubbo.rpc.cluster.Constants.WARMUP_KEY;
-import static org.apache.dubbo.rpc.cluster.Constants.WEIGHT_KEY;
+import static org.apache.dubbo.rpc.cluster.Constants.*;
 
 /**
  * AbstractLoadBalance
@@ -87,8 +84,10 @@ public abstract class AbstractLoadBalance implements LoadBalance {
                     if (uptime < 0) {
                         return 1;
                     }
+                    // warmup 是服务预热的时间，若启动时间未达到预热时间，权重会酌情降低，根据 uptime 动态调整。
                     int warmup = invoker.getUrl().getParameter(WARMUP_KEY, DEFAULT_WARMUP);
                     if (uptime > 0 && uptime < warmup) {
+                        // weight = max(1, uptime / warmup * weight)
                         weight = calculateWarmupWeight((int)uptime, warmup, weight);
                     }
                 }
