@@ -71,10 +71,12 @@ public class RandomLoadBalance extends AbstractLoadBalance {
         }
         // 权重有区别情况下，按权重随机。
         if (totalWeight > 0 && !sameWeight) {
+            // 生成一个 [0, totalWeight) 之间的整数
             // If (not every invoker has the same weight & at least one invoker's weight>0), select randomly based on totalWeight.
             int offset = ThreadLocalRandom.current().nextInt(totalWeight);
             // Return a invoker based on the random value.
             for (int i = 0; i < length; i++) {
+                // 让随机数减去当前 Invoker 的权重，当结果小于 0 的时候返回当前 Invoker。
                 offset -= weights[i];
                 if (offset < 0) {
                     return invokers.get(i);
