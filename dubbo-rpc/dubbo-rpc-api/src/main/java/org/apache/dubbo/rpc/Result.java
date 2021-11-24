@@ -20,17 +20,18 @@ import org.apache.dubbo.common.Experimental;
 
 import java.io.Serializable;
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionStage;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
+import java.util.concurrent.*;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 
 
 /**
+ * RPC 响应结果抽象：
+ * <ol>
+ *     <li>服务端发送的是：AsyncRpcResult</li>
+ *     <li>消费端接收的是：DecodeableRpcResult</li>
+ * </ol>
+ * <p>
  * (API, Prototype, NonThreadSafe)
  *
  * An RPC {@link Result}.

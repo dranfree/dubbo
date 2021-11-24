@@ -44,8 +44,10 @@ public final class DubboCountCodec implements Codec2 {
     @Override
     public Object decode(Channel channel, ChannelBuffer buffer) throws IOException {
         int save = buffer.readerIndex();
+        // 请看 MultiMessageHandler，多消息处理，粘包的时候会有用。
         MultiMessage result = MultiMessage.create();
         do {
+            // DubboCodec 一次最多只会解析出一条消息
             Object obj = codec.decode(channel, buffer);
             if (Codec2.DecodeResult.NEED_MORE_INPUT == obj) {
                 buffer.readerIndex(save);
