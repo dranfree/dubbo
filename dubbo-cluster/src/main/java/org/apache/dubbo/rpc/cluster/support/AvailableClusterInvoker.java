@@ -26,8 +26,7 @@ import org.apache.dubbo.rpc.cluster.LoadBalance;
 import java.util.List;
 
 /**
- * AvailableCluster
- *
+ * AvailableCluster：调用所有可能的服务提供方，透传异常。
  */
 public class AvailableClusterInvoker<T> extends AbstractClusterInvoker<T> {
 
