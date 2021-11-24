@@ -108,6 +108,9 @@ public class DubboProtocol extends AbstractProtocol {
             }
             RpcContext.getContext().setRemoteAddress(channel.getRemoteAddress());
             // 通过Invoker调用具体的服务
+            // 1.ProtocolFilterWrapper$1：Filter 过滤器链
+            // 2.JavassistProxyFactory$1：Wrapper 包装类
+            // 3.DemoServiceImpl#sayHallo：执行本地方法调用
             Result result = invoker.invoke(inv);
             return result.thenApply(Function.identity());
         }
@@ -326,6 +329,7 @@ public class DubboProtocol extends AbstractProtocol {
         // HeaderExchangeServer
         ExchangeServer server;
         try {
+            // 这里传入handler的最后一站，用途是执行真正的本地方法调用。
             server = Exchangers.bind(url, requestHandler);
         } catch (RemotingException e) {
             throw new RpcException("Fail to start server(url: " + url + ") " + e.getMessage(), e);
