@@ -24,11 +24,7 @@ import org.apache.dubbo.common.timer.HashedWheelTimer;
 import org.apache.dubbo.common.utils.Assert;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
-import org.apache.dubbo.remoting.Channel;
-import org.apache.dubbo.remoting.ChannelHandler;
-import org.apache.dubbo.remoting.Constants;
-import org.apache.dubbo.remoting.RemotingException;
-import org.apache.dubbo.remoting.RemotingServer;
+import org.apache.dubbo.remoting.*;
 import org.apache.dubbo.remoting.exchange.ExchangeChannel;
 import org.apache.dubbo.remoting.exchange.ExchangeServer;
 import org.apache.dubbo.remoting.exchange.Request;
@@ -41,14 +37,12 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import static java.util.Collections.unmodifiableCollection;
 import static org.apache.dubbo.common.constants.CommonConstants.READONLY_EVENT;
-import static org.apache.dubbo.remoting.Constants.HEARTBEAT_CHECK_TICK;
-import static org.apache.dubbo.remoting.Constants.LEAST_HEARTBEAT_DURATION;
-import static org.apache.dubbo.remoting.Constants.TICKS_PER_WHEEL;
+import static org.apache.dubbo.remoting.Constants.*;
 import static org.apache.dubbo.remoting.utils.UrlUtils.getHeartbeat;
 import static org.apache.dubbo.remoting.utils.UrlUtils.getIdleTimeout;
 
 /**
- * ExchangeServerImpl
+ * HeaderExchangeServer，基于协议头的信息交互客户端类，增加了空闲连接关闭机制，
  */
 public class HeaderExchangeServer implements ExchangeServer {
 

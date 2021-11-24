@@ -39,7 +39,9 @@ import static org.apache.dubbo.remoting.utils.UrlUtils.getHeartbeat;
 import static org.apache.dubbo.remoting.utils.UrlUtils.getIdleTimeout;
 
 /**
- * DefaultMessageClient，基于协议头的信息交互客户端类，增加了心跳机制。
+ * DefaultMessageClient，基于协议头的信息交互客户端类，增加了心跳、重连机制，
+ * <p>
+ * 主要逻辑全部转发到 {@link HeaderExchangeChannel}。
  */
 public class HeaderExchangeClient implements ExchangeClient {
 

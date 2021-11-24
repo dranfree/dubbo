@@ -36,7 +36,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.READONLY_EVENT;
 
 
 /**
- * ExchangeReceiver
+ * ExchangeReceiver，信息交换处理器，应该是用于将交换层桥接到底层通信层，作为信息交换的入口。
  */
 public class HeaderExchangeHandler implements ChannelHandlerDelegate {
 

@@ -128,7 +128,7 @@ final class HeaderExchangeChannel implements ExchangeChannel {
             throw new RemotingException(this.getLocalAddress(), null, "Failed to send request " + request + ", cause: The channel " + this + " is closed!");
         }
         // create request.
-        // 将原始请求数据封装为一个Request对象
+        // 将原始请求数据(一般就是 RpcInvocation 对象)封装为一个Request对象
         Request req = new Request();
         req.setVersion(Version.getProtocolVersion());
         // 设置需要响应
