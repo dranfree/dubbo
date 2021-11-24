@@ -69,6 +69,7 @@ public class DubboProtocol extends AbstractProtocol {
 
     private ExchangeHandler requestHandler = new ExchangeHandlerAdapter() {
 
+        // 这里是服务方响应请求的
         @Override
         public CompletableFuture<Object> reply(ExchangeChannel channel, Object message) throws RemotingException {
 
@@ -79,7 +80,7 @@ public class DubboProtocol extends AbstractProtocol {
             }
 
             Invocation inv = (Invocation) message;
-            // 获取Invoker实例
+            // 获取Invoker实例，这里最终指向服务端本地实现。
             Invoker<?> invoker = getInvoker(channel, inv);
             // need to consider backward-compatibility if it's a callback
             if (Boolean.TRUE.toString().equals(inv.getObjectAttachments().get(IS_CALLBACK_SERVICE_INVOKE))) {
