@@ -52,7 +52,7 @@ public class AsyncToSyncInvoker<T> implements Invoker<T> {
             // 如果是同步调用，那么这里阻塞直到收到提供方响应结果。
             if (InvokeMode.SYNC == ((RpcInvocation) invocation).getInvokeMode()) {
                 /**
-                 * NOTICE! 阻塞调用有严重的新能衰减？
+                 * NOTICE! 阻塞调用有严重的性能衰减？老版本JDK的BUG,see:https://www.cnblogs.com/thisiswhy/p/15385132.html
                  * must call {@link java.util.concurrent.CompletableFuture#get(long, TimeUnit)} because
                  * {@link java.util.concurrent.CompletableFuture#get()} was proved to have serious performance drop.
                  */
