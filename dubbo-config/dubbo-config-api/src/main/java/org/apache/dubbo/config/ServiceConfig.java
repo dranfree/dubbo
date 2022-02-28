@@ -429,6 +429,10 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
                     .getExtension(url.getProtocol()).getConfigurator(url).configure(url);
         }
 
+        // 1.<dubbo:service scope="none" />   不暴露
+        // 2.<dubbo:service scope="local" />  仅暴露到本地
+        // 3.<dubbo:service scope="remote" /> 仅暴露到远程
+        // 4.缺省不配置：同时暴露到本地和远程
         String scope = url.getParameter(SCOPE_KEY);
         // don't export when none is configured
         if (!SCOPE_NONE.equalsIgnoreCase(scope)) {

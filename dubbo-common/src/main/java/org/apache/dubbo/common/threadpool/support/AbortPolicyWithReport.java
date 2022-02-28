@@ -16,20 +16,16 @@
  */
 package org.apache.dubbo.common.threadpool.support;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.RejectedExecutionException;
-import java.util.concurrent.Semaphore;
-import java.util.concurrent.ThreadPoolExecutor;
-
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.JVMUtil;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.concurrent.*;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DUMP_DIRECTORY;
 
@@ -75,6 +71,7 @@ public class AbortPolicyWithReport extends ThreadPoolExecutor.AbortPolicy {
             e.getTaskCount(), e.getCompletedTaskCount(), e.isShutdown(), e.isTerminated(), e.isTerminating(),
             url.getProtocol(), url.getIp(), url.getPort());
         logger.warn(msg);
+        // 在线程池用尽的时候会自动保存jstack日志到用户目录下
         dumpJStack();
         throw new RejectedExecutionException(msg);
     }

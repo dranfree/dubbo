@@ -22,12 +22,7 @@ import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.rpc.Filter;
-import org.apache.dubbo.rpc.Invocation;
-import org.apache.dubbo.rpc.Invoker;
-import org.apache.dubbo.rpc.Result;
-import org.apache.dubbo.rpc.RpcContext;
-import org.apache.dubbo.rpc.RpcException;
+import org.apache.dubbo.rpc.*;
 import org.apache.dubbo.rpc.service.GenericService;
 
 import java.lang.reflect.Method;
@@ -41,6 +36,12 @@ import java.lang.reflect.Method;
  * <li>unexpected exception will be logged in ERROR level on provider side. Unexpected exception are unchecked
  * exception not declared on the interface</li>
  * <li>Wrap the exception not introduced in API package into RuntimeException. Framework will serialize the outer exception but stringnize its cause in order to avoid of possible serialization problem on client side</li>
+ * </ol>
+ * <p>
+ * 作用：
+ * <ol>
+ *     <li>运行时异常输出错误日志</li>
+ *     <li>异常不在 API 包中，则 Wrap 一层 RuntimeException 。RPC 对于第一层异常会直接序列化传输( Cause 异常会 String 化) ，避免异常在 Client 出不能反序列化问题。</li>
  * </ol>
  */
 @Activate(group = CommonConstants.PROVIDER)
@@ -58,10 +59,12 @@ public class ExceptionFilter implements Filter, Filter.Listener {
             try {
                 Throwable exception = appResponse.getException();
 
+                // 如果是受查异常，直接返回。
                 // directly throw if it's checked exception
                 if (!(exception instanceof RuntimeException) && (exception instanceof Exception)) {
                     return;
                 }
+                // 检查运行时异常是否被声明（RuntimeException），如果声明了，直接返回。
                 // directly throw if the exception appears in the signature
                 try {
                     Method method = invoker.getInterface().getMethod(invocation.getMethodName(), invocation.getParameterTypes());
@@ -75,25 +78,30 @@ public class ExceptionFilter implements Filter, Filter.Listener {
                     return;
                 }
 
+                // 未声明的异常打印错误日志
                 // for the exception not found in method's signature, print ERROR message in server's log.
                 logger.error("Got unchecked and undeclared exception which called by " + RpcContext.getContext().getRemoteHost() + ". service: " + invoker.getInterface().getName() + ", method: " + invocation.getMethodName() + ", exception: " + exception.getClass().getName() + ": " + exception.getMessage(), exception);
 
+                // 忽略用户自己定义的异常
                 // directly throw if exception class and interface class are in the same jar file.
                 String serviceFile = ReflectUtils.getCodeBase(invoker.getInterface());
                 String exceptionFile = ReflectUtils.getCodeBase(exception.getClass());
                 if (serviceFile == null || exceptionFile == null || serviceFile.equals(exceptionFile)) {
                     return;
                 }
+                // 忽略 JDK 内置异常
                 // directly throw if it's JDK exception
                 String className = exception.getClass().getName();
                 if (className.startsWith("java.") || className.startsWith("javax.")) {
                     return;
                 }
+                // 忽略 Dubbo 内置的异常
                 // directly throw if it's dubbo exception
                 if (exception instanceof RpcException) {
                     return;
                 }
 
+                // 未在api中暴露的异常，需要重新包装一层，避免客户端反序列化错误。
                 // otherwise, wrap with RuntimeException and throw back to the client
                 appResponse.setException(new RuntimeException(StringUtils.toString(exception)));
             } catch (Throwable e) {

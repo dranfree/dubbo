@@ -22,6 +22,12 @@ import java.util.Map;
 import java.util.stream.Stream;
 
 /**
+ * 调用参数抽象：
+ * <ol>
+ *     <li>消费端传出的是：RpcInvocation</li>
+ *     <li>服务端接收的是：DecodeableRpcInvocation</li>
+ * </ol>
+ * <p>
  * Invocation. (API, Prototype, NonThreadSafe)
  *
  * @serial Don't change the class name and package name.

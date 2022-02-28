@@ -28,11 +28,12 @@ import org.apache.dubbo.rpc.cluster.LoadBalance;
 import java.util.List;
 
 /**
+ * 快速失败：从不重试，出现异常直接抛出去。
+ * <p>
  * Execute exactly once, which means this policy will throw an exception immediately in case of an invocation error.
  * Usually used for non-idempotent write operations
  *
  * <a href="http://en.wikipedia.org/wiki/Fail-fast">Fail-fast</a>
- *
  */
 public class FailfastClusterInvoker<T> extends AbstractClusterInvoker<T> {
 

@@ -25,6 +25,13 @@ import org.apache.dubbo.rpc.RpcException;
 import java.util.List;
 
 /**
+ * 服务目录可以理解为 Invoker 的集合：
+ * <ol>
+ *     <li>静态目录</li>
+ *     <li>动态目录</li>
+ * </ol>
+ * 存储的是同一个服务的服务提供者的信息
+ * <p>
  * Directory. (SPI, Prototype, ThreadSafe)
  * <p>
  * <a href="http://en.wikipedia.org/wiki/Directory_service">Directory Service</a>

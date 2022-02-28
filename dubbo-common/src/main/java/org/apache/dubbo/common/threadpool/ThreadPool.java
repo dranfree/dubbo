@@ -26,6 +26,13 @@ import static org.apache.dubbo.common.constants.CommonConstants.THREADPOOL_KEY;
 
 /**
  * ThreadPool
+ *
+ * @see org.apache.dubbo.common.threadpool.support.fixed.FixedThreadPool
+ * 固定大小线程池，类似 {@link java.util.concurrent.Executors#newFixedThreadPool}
+ * @see org.apache.dubbo.common.threadpool.support.cached.CachedThreadPool
+ * 缓存线程池，默认空闲一分钟自动删除。
+ * @see org.apache.dubbo.common.threadpool.support.limited.LimitedThreadPool
+ * 可伸缩线程池，但是池中的线程数只会增长不会收缩，目的是为了避免收缩时突然来了大流量引起性能问题。
  */
 @SPI("fixed")
 public interface ThreadPool {

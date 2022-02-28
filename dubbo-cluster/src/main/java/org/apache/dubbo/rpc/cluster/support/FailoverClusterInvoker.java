@@ -80,7 +80,7 @@ public class FailoverClusterInvoker<T> extends AbstractClusterInvoker<T> {
                 // check again，列表判空。
                 checkInvokers(copyInvokers, invocation);
             }
-            // 通过负载均衡选择下一个需要调用的 Invoker
+            // 通过负载均衡选择下一个需要调用的 Invoker，支持粘滞连接。
             Invoker<T> invoker = select(loadbalance, invocation, copyInvokers, invoked);
             invoked.add(invoker); // 标记为已调用
             // 设置 invoked 到 RPC 上下文中

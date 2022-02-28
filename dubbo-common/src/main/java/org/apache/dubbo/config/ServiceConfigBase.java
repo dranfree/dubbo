@@ -159,6 +159,9 @@ public abstract class ServiceConfigBase<T> extends AbstractServiceConfig {
         return (export == null && provider != null) ? provider.getExport() : export;
     }
 
+    /**
+     * @see Service#delay()
+     */
     public boolean shouldDelay() {
         Integer delay = getDelay();
         return delay != null && delay > 0;

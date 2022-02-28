@@ -48,6 +48,8 @@ public class DubboInvoker<T> extends AbstractInvoker<T> {
 
     private final ReentrantLock destroyLock = new ReentrantLock();
 
+    // 这个集合是从 DubboProtocol 中传过来的，保存的是所有的 Invoker 实例。
+    // 当此类被销毁（destroy）的时候，会将自己从这个集合中移除，解除强引用。
     private final Set<Invoker<?>> invokers;
 
     public DubboInvoker(Class<T> serviceType, URL url, ExchangeClient[] clients) {
@@ -69,6 +71,17 @@ public class DubboInvoker<T> extends AbstractInvoker<T> {
         inv.setAttachment(PATH_KEY, getUrl().getPath());
         inv.setAttachment(VERSION_KEY, version);
 
+        // 1.ReferenceCountExchangeClient
+        // 2.HeaderExchangeClient
+        // 3.HeaderExchangeChannel
+        // 4.NettyClient，同时也是一个 ChannelHandler 实现，在收到响应后执行 received 方法处理响应消息。
+        //      以下和请求无关，Netty发送完数据就直接返回了，由 DubboInvoker 包装一个 Future 返回。
+        //      1.MultiMessageHandler
+        //      2.HearbeatHandler
+        //      3.AllChannelHandler，从这里开始进入业务线程池中处理响应消息。
+        //      4.DecodeHandler
+        //      5.HeaderExchangeHandler => DefaultFuture.received，设置Response，唤醒对应的用户线程。
+        //      6.DubboProtocol$ExchangeHandlerAdapter：这个handler是一个适配器，不清楚是做什么用的。
         ExchangeClient currentClient;
         if (clients.length == 1) {
             currentClient = clients[0];

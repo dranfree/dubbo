@@ -69,6 +69,7 @@ public class DubboProtocol extends AbstractProtocol {
 
     private ExchangeHandler requestHandler = new ExchangeHandlerAdapter() {
 
+        // 这里是服务方响应请求的
         @Override
         public CompletableFuture<Object> reply(ExchangeChannel channel, Object message) throws RemotingException {
 
@@ -79,7 +80,7 @@ public class DubboProtocol extends AbstractProtocol {
             }
 
             Invocation inv = (Invocation) message;
-            // 获取Invoker实例
+            // 获取Invoker实例，这里最终指向服务端本地实现。
             Invoker<?> invoker = getInvoker(channel, inv);
             // need to consider backward-compatibility if it's a callback
             if (Boolean.TRUE.toString().equals(inv.getObjectAttachments().get(IS_CALLBACK_SERVICE_INVOKE))) {
@@ -107,6 +108,9 @@ public class DubboProtocol extends AbstractProtocol {
             }
             RpcContext.getContext().setRemoteAddress(channel.getRemoteAddress());
             // 通过Invoker调用具体的服务
+            // 1.ProtocolFilterWrapper$1：Filter 过滤器链
+            // 2.JavassistProxyFactory$1：Wrapper 包装类
+            // 3.DemoServiceImpl#sayHallo：执行本地方法调用
             Result result = invoker.invoke(inv);
             return result.thenApply(Function.identity());
         }
@@ -285,12 +289,14 @@ public class DubboProtocol extends AbstractProtocol {
 
     private void openServer(URL url) {
         // find server.
+        // key is like: 10.113.128.48:20880
         String key = url.getAddress();
         //client can export a service which's only for server to invoke
         boolean isServer = url.getParameter(IS_SERVER_KEY, true);
         if (isServer) {
             // 访问缓存
             // 双重检验加锁
+            // 多协议导出的时候，这里会创建多个服务监听，一般只会有一个。
             ProtocolServer server = serverMap.get(key);
             if (server == null) {
                 synchronized (this) {
@@ -323,6 +329,7 @@ public class DubboProtocol extends AbstractProtocol {
         // HeaderExchangeServer
         ExchangeServer server;
         try {
+            // 这里传入handler的最后一站，用途是执行真正的本地方法调用。
             server = Exchangers.bind(url, requestHandler);
         } catch (RemotingException e) {
             throw new RpcException("Fail to start server(url: " + url + ") " + e.getMessage(), e);
